@@ -1,0 +1,69 @@
+===========================================================================
+ BIENVENIDO — FINANZAS APP BACKEND
+===========================================================================
+
+Este es el backend de una API REST para una app de finanzas personales
+gratuita construida con Laravel 13.
+
+===========================================================================
+ ¿QUÉ PUEDES HACER CON ESTA APP?
+===========================================================================
+
+✓ Registrar gastos e ingresos personales
+✓ Administrar múltiples cuentas (banco, efectivo, tarjeta)
+✓ Categorizar transacciones
+✓ Crear presupuestos mensuales por categoría
+✓ Crear y seguir metas de ahorro
+✓ Ver reportes financieros (mensual, anual)
+✓ Exportar transacciones (CSV, PDF)
+✓ Recibir alertas de presupuesto en tiempo real
+
+===========================================================================
+ ARCHIVOS CLAVE (LEE ESTO PRIMERO)
+===========================================================================
+
+  → memory-bank/START_HERE.md              Guía de inicio completa
+  → memory-bank/ARQUITECTURA-CRITERIOS-CRITICOS.md  Reglas OBLIGATORIAS
+  → memory-bank/activeContext.md           Estado actual del proyecto
+  → memory-bank/CODING-STANDARDS.md        15 patrones obligatorios
+  → memory-bank/ARCHITECTURE.md            Arquitectura del sistema
+  → QUALITY-RULES.md                       (raíz) Reglas de calidad
+
+===========================================================================
+ STACK TECNOLÓGICO
+===========================================================================
+
+  PHP 8.3+  |  Laravel 13  |  Sanctum 4  |  Spatie Permission 7.3
+  MySQL 8+  |  Laravel Reverb (WebSockets)  |  Laravel Queue
+
+===========================================================================
+ SETUP RÁPIDO
+===========================================================================
+
+  composer install
+  cp .env.example .env && php artisan key:generate
+  php artisan migrate && php artisan db:seed
+  php artisan serve
+
+===========================================================================
+ IMPLEMENTADO ACTUALMENTE
+===========================================================================
+
+  ✓ Auth (login/logout/me con Sanctum)
+  ✓ CRUD Usuarios con encriptación de datos sensibles
+  ✓ Roles y Permisos (Spatie Permission)
+  ✓ Sistema de Menús jerárquico
+  ✓ Sistema de Logs multi-tabla
+  ✓ Helpers de formato de moneda COP
+
+===========================================================================
+ PRÓXIMO A IMPLEMENTAR
+===========================================================================
+
+  → Categorías, Cuentas, Transacciones, Balance (Sprint 1)
+  → Presupuestos y Alertas en tiempo real (Sprint 2)
+  → Reportes y Exportación (Sprint 3)
+  → Metas de Ahorro (Sprint 4)
+  → Repository Pattern, Events, Observers, Policies (Sprint 5)
+
+===========================================================================
