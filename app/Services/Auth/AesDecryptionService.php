@@ -52,8 +52,8 @@ class AesDecryptionService implements AesDecryptionServiceInterface
             throw new RuntimeException('Los campos del payload no son valores hexadecimales/base64 válidos.');
         }
 
-        // Derivar clave con PBKDF2-SHA1 — misma configuración que CryptoJS por defecto
-        $derivedKey = hash_pbkdf2('sha1', $this->sharedKey, $saltBin, 1000, 32, true);
+        // Derivar clave con PBKDF2-SHA256 — CryptoJS 4.x usa SHA-256 por defecto (cambió de SHA-1 en v4.0.0)
+        $derivedKey = hash_pbkdf2('sha256', $this->sharedKey, $saltBin, 1000, 32, true);
 
         $decrypted = openssl_decrypt(
             $ciphertextBin,
