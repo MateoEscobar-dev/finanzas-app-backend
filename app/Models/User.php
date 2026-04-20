@@ -3,30 +3,68 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+
+use App\Traits\EncryptableTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Builder;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, EncryptableTrait;
+
+    protected $encryptable = [
+        'document',
+        'first_name',
+        'second_name',
+        'first_last_name',
+        'second_last_name',
+        'address',
+    ];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'email',
+        'password',
+        'document',
+        'first_name',
+        'second_name',
+        'first_last_name',
+        'second_last_name',
+        'address',
+        'phone',
+        'phone_ext',
+        'birth_day',
+        'password',
+        'lang',
+        'active',
+        'imagen',
+        'last_notification',
+    ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be hidden for serialization.
      *
-     * @return array<string, string>
+     * @var array<int, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 }
