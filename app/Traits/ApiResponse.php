@@ -2,9 +2,6 @@
 
 namespace App\Traits;
 
-use App\Models\Instructions;
-use Illuminate\Support\Facades\Lang;
-
 trait ApiResponse
 {
 
@@ -36,9 +33,9 @@ trait ApiResponse
   {
     return response([
       'status'   => 'Error',
-      'message'   => Lang::get('The given data was invalid'),
-      'data'      => $errorMessages,
-      'errors'      => $errors
+      'message'  => __('messages.general.validation_failed'),
+      'data'     => $errorMessages,
+      'errors'   => $errors
     ]);
   }
 }

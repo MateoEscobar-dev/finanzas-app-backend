@@ -25,12 +25,12 @@ class MenuController extends Controller
 
             return $this->successResponse(
                 $hierarchicalMenus,
-                'Menú jerárquico obtenido correctamente',
+                __('messages.menu.hierarchical_success'),
                 200
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener el menú jerárquico: ' . $e->getMessage(),
+                __('messages.general.error_retry'),
                 [],
                 500
             );
@@ -48,10 +48,10 @@ class MenuController extends Controller
                 ->orderBy('order', 'asc')
                 ->paginate(15);
 
-            return $this->successResponse($menus, 'Menús obtenidos correctamente', 200);
+            return $this->successResponse($menus, __('messages.menu.list_success'), 200);
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener los menús: ' . $e->getMessage(),
+                __('messages.general.error_retry'),
                 [],
                 500
             );
@@ -72,7 +72,7 @@ class MenuController extends Controller
                 $parentMenuId = $parentMenu?->id;
 
                 if (!$parentMenuId) {
-                    return $this->errorResponse('El menú padre especificado no existe', [], 404);
+                    return $this->errorResponse(__('messages.menu.parent_not_found'), [], 404);
                 }
             }
 
@@ -98,12 +98,12 @@ class MenuController extends Controller
 
             return $this->successResponse(
                 $menu->toHierarchical(),
-                'Menú creado correctamente',
+                __('messages.menu.created'),
                 201
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al crear el menú: ' . $e->getMessage(),
+                __('messages.general.error_retry'),
                 [],
                 500
             );
@@ -119,12 +119,12 @@ class MenuController extends Controller
         try {
             return $this->successResponse(
                 $menu->toHierarchical(),
-                'Menú obtenido correctamente',
+                __('messages.menu.show_success'),
                 200
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener el menú: ' . $e->getMessage(),
+                __('messages.general.error_retry'),
                 [],
                 500
             );
@@ -148,7 +148,7 @@ class MenuController extends Controller
                 if ($parentMenu) {
                     $parentMenuId = $parentMenu->id;
                 } elseif ($request->parent_key !== $menu->parent_key) {
-                    return $this->errorResponse('El menú padre especificado no existe', [], 404);
+                    return $this->errorResponse(__('messages.menu.parent_not_found'), [], 404);
                 }
             }
 
@@ -173,12 +173,12 @@ class MenuController extends Controller
 
             return $this->successResponse(
                 $menu->fresh()->toHierarchical(),
-                'Menú actualizado correctamente',
+                __('messages.menu.updated'),
                 200
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al actualizar el menú: ' . $e->getMessage(),
+                __('messages.general.error_retry'),
                 [],
                 500
             );
@@ -195,7 +195,7 @@ class MenuController extends Controller
             // Si el menú tiene submenús, no permitir eliminación
             if ($menu->subMenus()->exists()) {
                 return $this->errorResponse(
-                    'No se puede eliminar un menú que contiene submenús',
+                    __('messages.menu.has_submenus'),
                     [],
                     422
                 );
@@ -205,12 +205,12 @@ class MenuController extends Controller
 
             return $this->successResponse(
                 null,
-                'Menú eliminado correctamente',
+                __('messages.menu.deleted'),
                 200
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al eliminar el menú: ' . $e->getMessage(),
+                __('messages.general.error_retry'),
                 [],
                 500
             );
@@ -232,12 +232,12 @@ class MenuController extends Controller
 
             return $this->successResponse(
                 $hierarchicalMenus,
-                'Menús del sistema obtenidos correctamente',
+                __('messages.menu.by_system_success'),
                 200
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener los menús del sistema: ' . $e->getMessage(),
+                __('messages.general.error_retry'),
                 [],
                 500
             );
