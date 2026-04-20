@@ -243,7 +243,7 @@ Authorization: Bearer YOUR_ACTUAL_TOKEN
 
 2. Obtén un token válido con login:
 ```bash
-curl -X POST "http://paneladmin.local/api/login" \
+curl -X POST "http://finanzas.local/api/login" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@example.com",
@@ -425,7 +425,7 @@ Model not found
 **Solución:**
 1. Verifica que el ID del usuario sea correcto:
 ```bash
-curl -X PUT "http://paneladmin.local/api/user/999" \
+curl -X PUT "http://finanzas.local/api/user/999" \
   -H "Authorization: Bearer TOKEN"
 ```
 

@@ -42,7 +42,7 @@ routes/
 
 ### 1️⃣ Listar Usuarios (GET)
 ```
-GET http://paneladmin.local/api/user?take=10&skip=0&search=john
+GET http://finanzas.local/api/user?take=10&skip=0&search=john
 ```
 - ✅ Paginación con `take` y `skip`
 - ✅ Búsqueda por nombre, email, documento, teléfono
@@ -51,7 +51,7 @@ GET http://paneladmin.local/api/user?take=10&skip=0&search=john
 
 ### 2️⃣ Crear Usuario (POST)
 ```
-POST http://paneladmin.local/api/user
+POST http://finanzas.local/api/user
 Content-Type: application/json
 
 {
@@ -71,7 +71,7 @@ Content-Type: application/json
 
 ### 3️⃣ Obtener Usuario Específico (GET)
 ```
-GET http://paneladmin.local/api/user/1
+GET http://finanzas.local/api/user/1
 ```
 - ✅ Devuelve datos completos del usuario
 - ✅ Incluye roles y permisos
@@ -79,7 +79,7 @@ GET http://paneladmin.local/api/user/1
 
 ### 4️⃣ Actualizar Usuario (PUT)
 ```
-PUT http://paneladmin.local/api/user/1
+PUT http://finanzas.local/api/user/1
 Content-Type: application/json
 
 {
@@ -95,7 +95,7 @@ Content-Type: application/json
 
 ### 5️⃣ Eliminar Usuario (DELETE)
 ```
-DELETE http://paneladmin.local/api/user/1
+DELETE http://finanzas.local/api/user/1
 ```
 - ✅ Eliminación segura
 - ✅ Previene auto-eliminación
@@ -239,7 +239,7 @@ DELETE http://paneladmin.local/api/user/1
 
 ### 1. Login
 ```bash
-curl -X POST "http://paneladmin.local/api/login" \
+curl -X POST "http://finanzas.local/api/login" \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@example.com","password":"password"}'
 ```
@@ -257,7 +257,7 @@ Respuesta:
 
 ### 2. Crear Usuario
 ```bash
-curl -X POST "http://paneladmin.local/api/user" \
+curl -X POST "http://finanzas.local/api/user" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json" \
   -d '{
@@ -272,7 +272,7 @@ curl -X POST "http://paneladmin.local/api/user" \
 
 ### 3. Listar Usuarios
 ```bash
-curl -X GET "http://paneladmin.local/api/user?take=10&skip=0" \
+curl -X GET "http://finanzas.local/api/user?take=10&skip=0" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -387,7 +387,7 @@ php artisan cache:clear
 php artisan route:list | grep user
 
 # 5. Prueba rápida
-curl http://paneladmin.local/api/user -H "Authorization: Bearer TOKEN"
+curl http://finanzas.local/api/user -H "Authorization: Bearer TOKEN"
 ```
 
 ---

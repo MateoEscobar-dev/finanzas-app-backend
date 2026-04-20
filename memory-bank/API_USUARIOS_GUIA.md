@@ -6,7 +6,7 @@
 
 **URL:**
 ```
-GET http://paneladmin.local/api/user?take=10&skip=0&search=john
+GET http://finanzas.local/api/user?take=10&skip=0&search=john
 ```
 
 **Parámetros Query:**
@@ -67,7 +67,7 @@ Content-Type: application/json
 
 **URL:**
 ```
-POST http://paneladmin.local/api/user
+POST http://finanzas.local/api/user
 ```
 
 **Headers:**
@@ -165,7 +165,7 @@ Content-Type: application/json
 
 **URL:**
 ```
-GET http://paneladmin.local/api/user/1
+GET http://finanzas.local/api/user/1
 ```
 
 **Headers:**
@@ -221,7 +221,7 @@ Content-Type: application/json
 
 **URL:**
 ```
-PUT http://paneladmin.local/api/user/1
+PUT http://finanzas.local/api/user/1
 ```
 
 **Headers:**
@@ -287,7 +287,7 @@ Content-Type: application/json
 
 **URL:**
 ```
-DELETE http://paneladmin.local/api/user/1
+DELETE http://finanzas.local/api/user/1
 ```
 
 **Headers:**

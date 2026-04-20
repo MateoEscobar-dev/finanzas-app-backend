@@ -1,259 +1,304 @@
-# Sistema de Programas Dinámicos - Documentación
+# 📚 Documentación Técnica — Finanzas App Backend
 
-## 📋 Conceptos
+## Índice
 
-Este sistema utiliza el patrón **Strategy + Factory** para permitir:
+1. [Autenticación](#autenticación)
+2. [Usuarios](#usuarios)
+3. [Roles y Permisos](#roles-y-permisos)
+4. [Menús](#menús)
+5. [Sistema de Logs](#sistema-de-logs)
+6. [Traits Globales](#traits-globales)
+7. [Helpers](#helpers)
+8. [Sistema de Encriptación](#sistema-de-encriptación)
+9. [Colas de Trabajo](#colas-de-trabajo)
+10. [WebSockets](#websockets)
 
-- ✅ Instalación de programas con lógica **centralizada y reutilizable**
-- ✅ Extensibilidad: cada programa tiene su **propia clase**
-- ✅ Validaciones y configuración **específicas por programa**
-- ✅ Pasos antes, durante y después de la instalación
-- ✅ Instanciación **dinámica** basada en el slug
+---
 
-## 🏗️ Estructura de Directorios
+## Autenticación
 
-```
-app/Programs/
-├── Abstracts/
-│   └── AppProgramCreate.php          # Clase base abstracta
-├── Factory/
-│   └── ProgramFactory.php             # Factory que instancia dinámicamente
-└── Implementations/
-    ├── BancolombiaProgram.php        # Implementación específica
-    ├── BancoPopularProgram.php       # Implementación específica
-    ├── OtroProgram.php               # Agregar más programas aquí
-    └── ...
-```
+**Mecanismo:** Laravel Sanctum (Bearer Token)
 
-## 🔧 Cómo Funciona
+### Endpoints
 
-### 1. Factory - Instanciación Dinámica
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/login` | Iniciar sesión, retorna token |
+| POST | `/api/logout` | Cerrar sesión, revoca token |
+| GET | `/api/me` | Datos del usuario autenticado |
 
-El slug del programa se convierte automáticamente a nombre de clase:
+### Flujo de autenticación
 
 ```
-bancolombia           → BancolombiaProgram
-banco-popular         → BancoPopularProgram
-mi-programa-especial  → MiProgramaEspecialProgram
+1. POST /api/login con {email, password}
+2. Respuesta: { data: { token: "1|abc..." } }
+3. Usar: Authorization: Bearer 1|abc...
+4. POST /api/logout para revocar
 ```
 
-### 2. Clase Base - Lógica Compartida
+### Configuración
 
-`AppProgramCreate` proporciona:
+- Tokens guardados en tabla `personal_access_tokens`
+- Configuración en `config/sanctum.php`
+- Middleware: `auth:sanctum`
 
-- Validación de compatibilidad
-- Ciclo de vida de instalación
-- Logging y broadcasting en tiempo real
-- Manejo de errores
-- Respuesta estructurada
+---
 
-### 3. Subclases - Lógica Específica
+## Usuarios
 
-Cada programa extiende `AppProgramCreate` e implementa:
+### Modelo: `App\Models\User`
 
-```php
-class MiProgramaProgram extends AppProgramCreate
+**Traits:** `HasApiTokens`, `HasFactory`, `Notifiable`, `HasRoles`, `EncryptableTrait`
+
+**Campos encriptados:** `document`, `first_name`, `second_name`, `first_last_name`, `second_last_name`, `address`
+
+**Campos públicos:** `email`, `phone`, `phone_ext`, `birth_day`, `lang`, `active`, `imagen`
+
+### Endpoints
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/user` | Listar usuarios (paginado, buscable) |
+| POST | `/api/user` | Crear usuario |
+| GET | `/api/user/{id}` | Ver usuario |
+| PUT | `/api/user/{id}` | Actualizar usuario |
+| DELETE | `/api/user/{id}` | Eliminar usuario |
+| POST | `/api/user/{id}/activate` | Activar usuario |
+| POST | `/api/user/{id}/deactivate` | Desactivar usuario |
+| GET | `/api/user/{id}/history` | Historial de actividad |
+| POST | `/api/user/{id}/language` | Cambiar idioma |
+
+### Paginación
+
+```
+GET /api/user?take=10&skip=0&search=juan
+```
+
+Parámetros:
+- `take` — Registros por página (máx 100, default 10)
+- `skip` — Registros a saltar (offset)
+- `search` — Búsqueda en nombre, email, documento, teléfono
+
+---
+
+## Roles y Permisos
+
+**Librería:** Spatie Laravel Permission 7.3
+
+### Endpoints
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/roles` | Listar todos los roles |
+| GET | `/api/roles/{id}` | Ver rol específico |
+| GET | `/api/permissions` | Listar todos los permisos |
+
+### Permisos disponibles
+
+Los permisos se configuran en `config/permission_list.php`.
+
+### Asignar roles al crear usuario
+
+```json
+POST /api/user
 {
-    protected function isCompatibleWithServer(): bool { }
-    protected function beforeInstall(): void { }
-    protected function install(): void { }      // ← OBLIGATORIO
-    protected function afterInstall(): void { }
-}
-```
-
-## 📝 Ejemplo: Crear un Nuevo Programa
-
-### Paso 1: Crear la clase
-
-```php
-<?php
-
-namespace App\Programs\Implementations;
-
-use App\Programs\Abstracts\AppProgramCreate;
-
-class MiProgramaProgram extends AppProgramCreate
-{
-    protected function isCompatibleWithServer(): bool
-    {
-        if ($this->server->operatingSystem->slug !== 'linux') {
-            throw new \Exception("MiPrograma requiere Linux");
-        }
-        return true;
-    }
-
-    protected function beforeInstall(): void
-    {
-        parent::beforeInstall();
-        $this->logProgress("Descargando dependencias...");
-    }
-
-    protected function install(): void
-    {
-        $this->logProgress("Instalando MiPrograma...");
-        
-        $this->executeServerCommand("wget https://repo.example.com/mi-programa.tar.gz");
-        $this->executeServerCommand("tar -xzf mi-programa.tar.gz");
-        
-        $this->setResponseData([
-            'program' => 'MiPrograma',
-            'version' => '1.0.0',
-            'status' => 'installed',
-        ]);
-    }
-
-    protected function afterInstall(): void
-    {
-        parent::afterInstall();
-        $this->logProgress("Iniciando servicios...");
-        $this->executeServerCommand("systemctl start mi-programa");
-    }
-}
-```
-
-Archivo: `app/Programs/Implementations/MiProgramaProgram.php`
-
-### Paso 2: Usar en el Controller
-
-```php
-// El Factory se encarga automáticamente de instanciar MiProgramaProgram
-// basándose en el slug "mi-programa"
-$programInstaller = ProgramFactory::create($server, $program, $operationId);
-$responseData = $programInstaller->getResponseData();
-```
-
-## 🎯 Métodos Disponibles en la Clase Base
-
-### Métodos a Override
-
-| Método | Obligatorio | Descripción |
-|--------|-----------|-------------|
-| `install()` | ✅ SÍ | Implementación principal |
-| `isCompatibleWithServer()` | ❌ No | Validar compatibilidad |
-| `beforeInstall()` | ❌ No | Pasos previos |
-| `afterInstall()` | ❌ No | Pasos posteriores |
-| `execute()` | ❌ No | Cambiar el flujo completo |
-
-### Métodos Disponibles
-
-```php
-// Registrar progreso y transmitir eventos en tiempo real
-$this->logProgress("Mensaje", ['key' => 'value']);
-
-// Ejecutar comandos en el servidor SSH
-$result = $this->executeServerCommand("comando aquí");
-
-// Establecer datos de respuesta (se devuelven al cliente)
-$this->setResponseData(['key' => 'value']);
-
-// Obtener datos de respuesta
-$data = $this->getResponseData();
-
-// Acceso a propiedades
-$this->server;          // El servidor (Server model)
-$this->program;         // El programa (ServerAvailablePrograms model)
-$this->operationId;     // ID único de la operación
-```
-
-## 🚨 Manejo de Errores
-
-Si el programa no existe:
-
-```
-Exception: Programa no soportado: No existe la clase 'MiProgramaProgram' 
-           para el programa 'mi-programa'
-```
-
-## 📡 Eventos Transmitidos
-
-Durante la instalación, se transmiten eventos WebSocket en tiempo real:
-
-```php
-// Progreso
-broadcast(new ServerActionProgress($operationId, $message, $details));
-
-// Completado
-broadcast(new ServerActionComplete($operationId, $message));
-
-// Error
-broadcast(new ServerActionError($operationId, $message, 'ERROR_CODE'));
-```
-
-## 💡 Ejemplo de Flujo Completo
-
-```
-POST /api/server/1/add-program
-{
-    "programId": 5,
-    "operationId": "op_abc123"
-}
-
-↓ Factory instancia BancoPopularProgram
-↓ Constructor llama execute()
-↓ beforeInstall() → Actualizar repositorios, instalar dependencias
-↓ install() → Descargar, extraer, instalar programa
-↓ afterInstall() → Iniciar servicios, health checks
-↓ completeOperation() → Marcar como completado
-↓ broadcast() → Notificar al cliente
-
-Response:
-{
-    "success": true,
-    "message": "Programa BancoPopular agregado correctamente",
-    "data": {
-        "program": "BancoPopular",
-        "installation_path": "/opt/banco-popular",
-        "status": "installed",
-        "version": "2.0.0"
-    }
-}
-```
-
-## 🔍 Testing
-
-```php
-// Probar validación de compatibilidad
-$this->assertThrows('Linux required', function () {
-    ProgramFactory::create($server, $program, 'op_123');
-});
-
-// Probar que la clase existe
-$this->assertTrue(class_exists('App\\Programs\\Implementations\\BancolombiaProgram'));
-```
-
-## 📚 Extensiones Avanzadas
-
-### Override del flujo completo
-
-```php
-protected function execute(): void
-{
-    $this->logProgress("Ejecutando secuencia personalizada...");
-    
-    $this->step1();
-    $this->step2();
-    $this->step3();
-    
-    $this->completeOperation();
-}
-```
-
-### Métodos auxiliares personalizados
-
-```php
-private function downloadInstaller(): string
-{
-    $result = $this->executeServerCommand("wget ...");
-    return $result['output'];
-}
-
-private function validateInstallation(): bool
-{
-    $result = $this->executeServerCommand("./test.sh");
-    return $result['success'];
+    "email": "user@example.com",
+    "password": "secret",
+    "roles": ["admin", "user"]
 }
 ```
 
 ---
 
-**Creado:** 2026-01-22 | **Versión:** 1.0
+## Menús
+
+### Modelo: `App\Models\Menu`
+
+**Relaciones:**
+- `parentMenu()` — BelongsTo (padre)
+- `subMenus()` — HasMany (hijos ordenados por `order`)
+
+**Scopes:**
+- `rootMenus()` — Solo menús sin padre
+- `visible()` — Solo menús con `flag_visible = true`
+
+### Endpoints
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/menu` | Listar menús paginados |
+| POST | `/api/menu` | Crear menú |
+| GET | `/api/menu/{id}` | Ver menú |
+| PUT | `/api/menu/{id}` | Actualizar menú |
+| DELETE | `/api/menu/{id}` | Eliminar menú |
+| GET | `/api/menu/hierarchical` | Árbol jerárquico completo |
+| GET | `/api/menu/by-system/{id}` | Menús por sistema |
+
+### Estructura jerárquica
+
+```json
+GET /api/menu/hierarchical
+{
+    "data": [
+        {
+            "id": 1,
+            "label": "Dashboard",
+            "link": "/dashboard",
+            "icon": "home",
+            "children": [
+                {
+                    "id": 5,
+                    "label": "Resumen",
+                    "link": "/dashboard/summary"
+                }
+            ]
+        }
+    ]
+}
+```
+
+---
+
+## Sistema de Logs
+
+### Modelos
+
+| Modelo | Tabla | Propósito |
+|--------|-------|-----------|
+| `Logs` | `logs` | Operaciones CRUD sobre cualquier tabla |
+| `ErrorException` | `error_exceptions` | Stack trace de excepciones |
+| `LogsInformation` | `logs_information` | Metadata adicional de logs |
+
+### Uso con LogTrait
+
+```php
+use App\Traits\LogTrait;
+
+class TransactionController extends Controller
+{
+    use LogTrait;
+
+    public function store(): JsonResponse
+    {
+        // ... crear transacción
+        $this->createLog('transactions', 'CREATE', $transaction->id);
+    }
+}
+```
+
+### Tipos de log
+
+- `CREATE` — Creación de registro
+- `UPDATE` — Actualización de registro
+- `DELETE` — Eliminación de registro
+- `VIEW` — Consulta importante
+- Error: Si se pasa `$th` (Throwable), guarda también en `error_exceptions`
+
+---
+
+## Traits Globales
+
+### `ApiResponse` — `app/Traits/ApiResponse.php`
+
+```php
+// Éxito (200)
+$this->successResponse($data, 'Mensaje', 200);
+
+// Éxito con paginación
+$this->successResponse($data, 'Lista obtenida', 200, [
+    'total' => 150,
+    'per_page' => 10,
+    'current_page' => 1
+]);
+
+// Error
+$this->errorResponse('Mensaje de error', $errorsArray, 422);
+
+// Error de validación
+$this->infoResponse($validationMessages, $errors);
+```
+
+### `LogTrait` — `app/Traits/LogTrait.php`
+
+```php
+$this->createLog($tabla, $tipo, $id, $excepcion = "", $razon = "");
+$this->set_language($language, $tipo, $tabla, $id);
+```
+
+### `EncryptableTrait` — `app/Traits/EncryptableTrait.php`
+
+```php
+// En el modelo, definir campos a encriptar:
+protected $encryptable = ['document', 'first_name', 'address'];
+
+// El trait encripta automáticamente al guardar y desencripta al leer
+// Usa funciones SQL: encrypt_data() y decrypt_data()
+```
+
+---
+
+## Helpers
+
+Archivo: `app/Helpers/Helpers.php` (autoload global)
+
+```php
+// Limpiar formato de moneda COP → número
+cleanNumber("$ 1.250.000")  // → 1250000.0
+cleanNumber("1.250.000")    // → 1250000.0
+
+// Número → formato COP
+transformNumber(1250000)    // → "$ 1.250.000"
+transformNumber(500)        // → "$ 500"
+```
+
+---
+
+## Sistema de Encriptación
+
+Se usan funciones a nivel de base de datos MySQL:
+
+- `encrypt_data(valor, llave)` — Encripta el valor
+- `decrypt_data(valor, llave)` — Desencripta el valor
+
+La clave de encriptación viene de la variable de entorno `APP_KEY`.
+
+El `EncryptableTrait` maneja esto transparentemente: los campos listados en `$encryptable` se encriptan al guardar y desencriptan al leer automáticamente.
+
+---
+
+## Colas de Trabajo
+
+Ver guía completa en [QUEUE_SETUP.md](QUEUE_SETUP.md).
+
+### Usos en la app de finanzas
+
+| Job | Cuándo |
+|-----|--------|
+| `GenerateFinancialReport` | Al pedir reporte PDF/Excel |
+| `ExportTransactionsCsv` | Al exportar transacciones |
+| `ImportTransactionsCsv` | Al importar transacciones |
+| `SendBudgetAlertEmail` | Al exceder un presupuesto |
+
+### Iniciar el worker
+
+```bash
+php artisan queue:work --tries=3 --timeout=300
+```
+
+---
+
+## WebSockets
+
+Ver guía completa en [LARAVEL_REVERB_SETUP.md](LARAVEL_REVERB_SETUP.md).
+
+### Canales de la app de finanzas
+
+| Canal | Tipo | Eventos |
+|-------|------|---------|
+| `user.{id}` | Private | `budget.exceeded`, `balance.updated`, `report.ready` |
+
+### Iniciar Reverb
+
+```bash
+php artisan reverb:start
+```

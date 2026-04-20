@@ -1,366 +1,274 @@
-# 💻 Referencia Rápida de Sintaxis
+# 💻 Referencia Rápida — Finanzas App Backend
 
-## 🔥 Cheat Sheet - Lo Más Importante
-
-### Crear un Programa (Template Mínimo)
-
-```php
-<?php
-
-namespace App\Programs\Implementations;
-
-use App\Programs\Abstracts\AppProgramCreate;
-
-class MiProgramaProgram extends AppProgramCreate
-{
-    // OBLIGATORIO
-    protected function install(): void
-    {
-        $this->logProgress("Instalando...");
-        $this->executeServerCommand("apt-get install mi-programa");
-        $this->setResponseData(['status' => 'installed']);
-    }
-}
-```
-
-**Archivo:** `app/Programs/Implementations/MiProgramaProgram.php`
-
-### Métodos Disponibles en la Clase Base
-
-```php
-// LOGGING (transmite en tiempo real)
-$this->logProgress("Mensaje");
-$this->logProgress("Mensaje", ['key' => 'value']);
-
-// COMANDOS SSH
-$result = $this->executeServerCommand("comando aquí");
-// Devuelve: ['success' => true/false, 'output' => 'output']
-
-// DATOS DE RESPUESTA
-$this->setResponseData(['key' => 'value']);
-$data = $this->getResponseData();
-
-// PROPIEDADES
-$this->server;          // Server model
-$this->program;         // ServerAvailablePrograms model
-$this->operationId;     // string (único)
-$this->responseData;    // array
-```
-
-### Hooks Disponibles (Opcionales)
-
-```php
-// 1. Validar compatibilidad (OVERRIDE si lo necesitas)
-protected function isCompatibleWithServer(): bool
-{
-    if (!$valid) throw new \Exception("Mensaje de error");
-    return true;
-}
-
-// 2. Pasos previos (OVERRIDE si lo necesitas)
-protected function beforeInstall(): void
-{
-    parent::beforeInstall();
-    // Tu lógica aquí
-}
-
-// 3. Instalación PRINCIPAL (OBLIGATORIO - SIEMPRE override)
-protected function install(): void
-{
-    // Tu lógica aquí
-}
-
-// 4. Pasos posteriores (OVERRIDE si lo necesitas)
-protected function afterInstall(): void
-{
-    parent::afterInstall();
-    // Tu lógica aquí
-}
-
-// 5. Override completo del flujo (avanzado, raro)
-protected function execute(): void
-{
-    // TODO: flujo personalizado completo
-    $this->completeOperation();
-}
-```
-
-### Slug → Clase (Conversión Automática)
-
-| Slug en BD | Clase Generada | Archivo |
-|-----------|----------------|---------|
-| `bancolombia` | `BancolombiaProgram` | `BancolombiaProgram.php` |
-| `banco-popular` | `BancoPopularProgram` | `BancoPopularProgram.php` |
-| `demo` | `DemoProgram` | `DemoProgram.php` |
-| `mi-programa` | `MiProgramaProgram` | `MiProgramaProgram.php` |
-
-## 🎯 Patrones Comunes
-
-### Patrón 1: Programa Simple
-
-```php
-class SimpleProgram extends AppProgramCreate
-{
-    protected function install(): void
-    {
-        $this->logProgress("Instalando...");
-        $this->executeServerCommand("apt-get install simple");
-        $this->setResponseData(['status' => 'installed']);
-    }
-}
-```
-
-### Patrón 2: Con Validación
-
-```php
-class ValidatedProgram extends AppProgramCreate
-{
-    protected function isCompatibleWithServer(): bool
-    {
-        if ($this->server->ram < 4) {
-            throw new \Exception("Requiere 4GB RAM");
-        }
-        return true;
-    }
-
-    protected function install(): void
-    {
-        $this->logProgress("Instalando...");
-        $this->executeServerCommand("apt-get install programa");
-        $this->setResponseData(['status' => 'installed']);
-    }
-}
-```
-
-### Patrón 3: Con Preparación
-
-```php
-class PreparedProgram extends AppProgramCreate
-{
-    protected function beforeInstall(): void
-    {
-        parent::beforeInstall();
-        $this->logProgress("Preparando...");
-        $this->executeServerCommand("apt-get update");
-        $this->executeServerCommand("apt-get install -y dependencia");
-    }
-
-    protected function install(): void
-    {
-        $this->logProgress("Instalando...");
-        $this->executeServerCommand("apt-get install programa");
-        $this->setResponseData(['status' => 'installed']);
-    }
-}
-```
-
-### Patrón 4: Con Pasos Posteriores
-
-```php
-class PostProgram extends AppProgramCreate
-{
-    protected function install(): void
-    {
-        $this->logProgress("Instalando...");
-        $this->executeServerCommand("apt-get install programa");
-        $this->setResponseData(['status' => 'installed']);
-    }
-
-    protected function afterInstall(): void
-    {
-        parent::afterInstall();
-        $this->logProgress("Iniciando servicios...");
-        $this->executeServerCommand("systemctl start programa");
-        $this->executeServerCommand("systemctl enable programa");
-    }
-}
-```
-
-### Patrón 5: Múltiples Pasos
-
-```php
-class ComplexProgram extends AppProgramCreate
-{
-    private function paso1() { /* ... */ }
-    private function paso2() { /* ... */ }
-    private function paso3() { /* ... */ }
-
-    protected function install(): void
-    {
-        $this->paso1();
-        $this->paso2();
-        $this->paso3();
-    }
-}
-```
-
-## 📡 Broadcasting
-
-Los eventos se transmiten automáticamente:
-
-```javascript
-// Cliente JavaScript
-Echo.channel(`server-action.${operationId}`)
-    .listen('ServerActionProgress', (event) => {
-        console.log(event.message); // "Instalando..."
-    })
-    .listen('ServerActionComplete', (event) => {
-        console.log("✓ Completado");
-    })
-    .listen('ServerActionError', (event) => {
-        console.log("✗ Error: " + event.message);
-    });
-```
-
-## 🔍 Debugging
-
-### Ver qué está pasando
-
-```bash
-# Terminal 1: Ver logs en tiempo real
-tail -f storage/logs/laravel.log
-
-# Terminal 2: Ejecutar comando
-curl -X POST http://localhost:8000/api/server/1/add-program \
-  -H "Content-Type: application/json" \
-  -d '{"programId": 5}'
-```
-
-### Ver en BD
-
-```sql
-SELECT * FROM server_activity_logs 
-WHERE operation_id = 'op_xxx';
-
--- Ver error específico
-SELECT error_message FROM server_activity_logs 
-WHERE status = 'failed' 
-ORDER BY completed_at DESC 
-LIMIT 1;
-```
-
-## 🧪 Testing Rápido
-
-```bash
-# Ejecutar todos
-php artisan test tests/Feature/Programs/
-
-# Ejecutar uno específico
-php artisan test tests/Feature/Programs/ProgramFactoryTest.php::factory_instancia_correctamente_la_clase_bancolombia
-
-# Ver output
-php artisan test tests/Feature/Programs/ -v
-```
-
-## ⚙️ Configuración
-
-### En ServerController
-
-```php
-use App\Programs\Factory\ProgramFactory;
-
-// Ya hecho, pero así se usa:
-$installer = ProgramFactory::create($server, $program, $operationId);
-$data = $installer->getResponseData();
-```
-
-### Models Requeridos
-
-```php
-// app/Models/Server.php
-class Server extends Model { }
-
-// app/Models/ServerAvailablePrograms.php
-class ServerAvailablePrograms extends Model { }
-
-// app/Models/ServerActivityLog.php
-class ServerActivityLog extends Model { }
-```
-
-## 🚨 Excepciones Comunes
-
-| Error | Causa | Solución |
-|-------|-------|----------|
-| "Clase no encontrada" | Archivo no existe | Crear en `Implementations/` |
-| "Debe extender AppProgramCreate" | Herencia incorrecta | Agregar `extends AppProgramCreate` |
-| "Requiere 4GB" | Server no valida reqs | Override `isCompatibleWithServer()` |
-| "SSH Error" | Conexión fallida | Verificar credenciales SSH |
-| "Status pending" | Error en ejecución | Ver `error_message` en BD |
-
-## 📝 Respuesta del API
-
-```json
-{
-  "success": true,
-  "message": "Programa MiPrograma agregado correctamente",
-  "data": {
-    "status": "installed",
-    "program": "MiPrograma",
-    "version": "1.0.0",
-    "path": "/opt/mi-programa"
-  }
-}
-```
-
-## 🔄 Flujo Completo
+## 🚦 Flujo obligatorio para cualquier feature
 
 ```
-1. POST /api/server/{id}/add-program
-   ↓
-2. ServerController::addProgram()
-   ↓
-3. ProgramFactory::create($server, $program, $operationId)
-   ↓
-4. new MiProgramaProgram($server, $program, $operationId)
-   ↓
-5. Constructor → execute()
-   ├─ validateProgram()
-   ├─ beforeInstall()
-   ├─ install() ← TÚ IMPLEMENTAS AQUÍ
-   ├─ afterInstall()
-   └─ completeOperation()
-   ↓
-6. broadcast(ServerActionComplete)
-   ↓
-7. return successResponse()
+FormRequest → Controller → Service → Repository → Model + Scopes
+                                    ↓
+                             Events → Listeners
+                                    ↓
+                            Observers (auditoría)
+                                    ↓
+                         Jobs (si hay operación pesada)
+                                    ↓
+                      Broadcasting (si hay tiempo real)
 ```
-
-## 📊 Conversión de Nombres
-
-```
-Script: convertSlugToClassName()
-
-Input:  "banco-popular"
-Steps:
-  1. Reemplazar "-" y "_" por espacios → "banco popular"
-  2. Aplicar ucwords() → "Banco Popular"
-  3. Remover espacios → "BancoPopular"
-  4. Agregar sufijo → "BancoPopularProgram"
-Output: "BancoPopularProgram"
-```
-
-## 🎯 Resumen Mínimo
-
-Para crear un programa que instale un paquete:
-
-```php
-<?php
-namespace App\Programs\Implementations;
-use App\Programs\Abstracts\AppProgramCreate;
-
-class MiProgramaProgram extends AppProgramCreate
-{
-    protected function install(): void
-    {
-        $this->logProgress("Instalando MiPrograma...");
-        $this->executeServerCommand("apt-get install mi-programa");
-        $this->setResponseData(['status' => 'installed']);
-    }
-}
-```
-
-**Eso es todo lo que necesitas.** El resto lo hace la clase base.
 
 ---
 
-**Referencia:** 2026-01-22 | **Versión:** 1.0
+## 📦 Crear una feature completa — Template
+
+### 1. Modelo con Scopes
+
+```php
+class Transaction extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['user_id', 'category_id', 'account_id', 'amount', 'type', 'date', 'description'];
+
+    public function scopeByUser(Builder $query, int $userId): Builder
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    public function scopeCurrentMonth(Builder $query): Builder
+    {
+        return $query->whereMonth('date', now()->month)->whereYear('date', now()->year);
+    }
+
+    public function scopeExpenses(Builder $query): Builder
+    {
+        return $query->where('type', 'expense');
+    }
+
+    public function scopeIncomes(Builder $query): Builder
+    {
+        return $query->where('type', 'income');
+    }
+
+    public function user(): BelongsTo { return $this->belongsTo(User::class); }
+    public function category(): BelongsTo { return $this->belongsTo(Category::class); }
+    public function account(): BelongsTo { return $this->belongsTo(Account::class); }
+}
+```
+
+### 2. Repository Interface + Implementación
+
+```php
+// app/Repositories/Contracts/TransactionRepositoryInterface.php
+interface TransactionRepositoryInterface
+{
+    public function getUserTransactions(int $userId, array $filters = []): Collection;
+    public function create(array $data): Transaction;
+    public function update(int $id, array $data): bool;
+    public function delete(int $id): bool;
+}
+
+// app/Repositories/Eloquent/EloquentTransactionRepository.php
+class EloquentTransactionRepository implements TransactionRepositoryInterface
+{
+    public function getUserTransactions(int $userId, array $filters = []): Collection
+    {
+        return Transaction::byUser($userId)
+            ->when($filters['from'] ?? null, fn($q, $from) => $q->where('date', '>=', $from))
+            ->when($filters['to'] ?? null, fn($q, $to) => $q->where('date', '<=', $to))
+            ->when($filters['type'] ?? null, fn($q, $type) => $q->ofType($type))
+            ->get();
+    }
+
+    public function create(array $data): Transaction
+    {
+        return Transaction::create($data);
+    }
+}
+```
+
+### 3. Service Provider binding
+
+```php
+// app/Providers/RepositoryServiceProvider.php
+$this->app->bind(TransactionRepositoryInterface::class, EloquentTransactionRepository::class);
+```
+
+### 4. Service
+
+```php
+class TransactionService
+{
+    public function __construct(
+        private readonly TransactionRepositoryInterface $transactionRepository
+    ) {}
+
+    public function create(array $data, int $userId): Transaction
+    {
+        $data['user_id'] = $userId;
+        $transaction = $this->transactionRepository->create($data);
+        event(new ExpenseCreated($transaction));
+        return $transaction;
+    }
+}
+```
+
+### 5. Form Request
+
+```php
+class StoreTransactionRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
+
+    public function rules(): array
+    {
+        return [
+            'amount'      => ['required', 'numeric', 'min:0.01'],
+            'type'        => ['required', 'in:income,expense'],
+            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'account_id'  => ['required', 'integer', 'exists:accounts,id'],
+            'date'        => ['required', 'date'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'amount.required'      => 'El monto es requerido',
+            'type.in'              => 'El tipo debe ser ingreso o gasto',
+            'category_id.exists'   => 'La categoría no existe',
+        ];
+    }
+}
+```
+
+### 6. Policy
+
+```php
+class TransactionPolicy
+{
+    public function view(User $user, Transaction $transaction): bool
+    {
+        return $user->id === $transaction->user_id;
+    }
+    public function update(User $user, Transaction $transaction): bool
+    {
+        return $user->id === $transaction->user_id;
+    }
+    public function delete(User $user, Transaction $transaction): bool
+    {
+        return $user->id === $transaction->user_id;
+    }
+}
+```
+
+### 7. Controller
+
+```php
+class TransactionController extends Controller
+{
+    use ApiResponse, LogTrait;
+
+    public function __construct(
+        private readonly TransactionService $transactionService
+    ) {}
+
+    public function store(StoreTransactionRequest $request): JsonResponse
+    {
+        try {
+            $transaction = $this->transactionService->create(
+                $request->validated(),
+                auth()->id()
+            );
+            $this->createLog('transactions', 'CREATE', $transaction->id);
+            return $this->successResponse($transaction, 'Transacción creada', 201);
+        } catch (\Throwable $th) {
+            $this->createLog('transactions', 'CREATE', 0, $th);
+            return $this->errorResponse('Error al crear transacción', [], 500);
+        }
+    }
+
+    public function show(Transaction $transaction): JsonResponse
+    {
+        $this->authorize('view', $transaction);
+        return $this->successResponse($transaction, 'Transacción obtenida');
+    }
+}
+```
+
+### 8. Observer
+
+```php
+class TransactionObserver
+{
+    public function created(Transaction $transaction): void
+    {
+        // Auditoría automática
+        Log::info('Transaction created', ['id' => $transaction->id]);
+    }
+    public function updated(Transaction $transaction): void { ... }
+    public function deleted(Transaction $transaction): void { ... }
+}
+// Registrar en AppServiceProvider::boot():
+Transaction::observe(TransactionObserver::class);
+```
+
+---
+
+## 🎯 Respuestas API — Cheat Sheet
+
+```php
+// 200 OK
+return $this->successResponse($data, 'Mensaje');
+
+// 201 Created
+return $this->successResponse($data, 'Creado', 201);
+
+// 202 Accepted (Job encolado)
+return $this->successResponse(null, 'Procesando', 202);
+
+// 422 Validation (automático con FormRequest)
+
+// 403 Forbidden
+return $this->errorResponse('No autorizado', [], 403);
+
+// 404 Not Found
+return $this->errorResponse('No encontrado', [], 404);
+
+// 500 Server Error
+return $this->errorResponse('Error interno', [], 500);
+```
+
+---
+
+## 📋 Comandos Artisan más usados
+
+```bash
+php artisan make:model Transaction -mfs         # Model + Migration + Factory + Seeder
+php artisan make:request StoreTransactionRequest
+php artisan make:policy TransactionPolicy --model=Transaction
+php artisan make:observer TransactionObserver --model=Transaction
+php artisan make:event ExpenseCreated
+php artisan make:listener CheckBudgetExceeded --event=ExpenseCreated
+php artisan make:job GenerateFinancialReport
+php artisan route:list --path=api
+php artisan queue:work
+php artisan reverb:start
+```
+
+---
+
+## 🔑 Traits disponibles
+
+| Trait | Uso | Importar |
+|-------|-----|---------|
+| `ApiResponse` | Respuestas JSON | `use App\Traits\ApiResponse;` |
+| `LogTrait` | Logging | `use App\Traits\LogTrait;` |
+| `EncryptableTrait` | Encriptar campos | `use App\Traits\EncryptableTrait;` |
+
+---
+
+## 🔢 Helpers globales (sin importar)
+
+```php
+transformNumber(1250000)         // → "$ 1.250.000"
+cleanNumber("$ 1.250.000")       // → 1250000.0
+```

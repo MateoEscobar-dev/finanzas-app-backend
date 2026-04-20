@@ -1,44 +1,85 @@
-# Configuración de Queue Workers con Laravel
+# Configuración de Colas (Queues) — Finanzas App
 
-## 🚀 Implementación Completada
+> Las colas permiten ejecutar tareas pesadas en segundo plano sin bloquear las peticiones HTTP.
+> En la app de finanzas se usan para: generación de reportes, envío de emails, importación masiva de transacciones, notificaciones de alertas de presupuesto.
 
-Se ha implementado un sistema robusto de ejecución de scripts en segundo plano usando Laravel Queue con las siguientes características:
+## Estado
 
-### ✅ Características Implementadas
+El driver de colas está configurado como `database`. Las tablas `jobs`, `job_batches` y `failed_jobs` ya están migradas.
 
-1. **Jobs en Segundo Plano**
-   - `InstallServerJob` - Instala servidor con validación completa
-   - `ChangeDomainJob` - Cambia dominio con verificación de exit codes
+## Casos de Uso en Finanzas Personales
 
-2. **Validación Robusta**
-   - ✅ Verifica conexión SSH antes de ejecutar
-   - ✅ Valida permisos de archivos (chmod)
-   - ✅ Captura exit codes del script shell
-   - ✅ Timeout configurable (30min install, 15min change-domain)
-   - ✅ Manejo de errores detallado
+### Jobs Disponibles (planificados)
 
-3. **Progress Tracking en Tiempo Real**
-   - Emite eventos `ServerActionProgress` durante toda la ejecución
-   - Actualiza `ServerActivityLog` con estados: queued → in_progress → completed/failed
-   - Broadcasting vía Laravel Reverb para mostrar en frontend
+1. **GenerateReportJob** — Genera reportes PDF/Excel de transacciones
+   - Se dispara desde el controlador de reportes
+   - Retorna 202 inmediato; frontend escucha vía Broadcasting cuando termina
 
-4. **HTTP Response Inmediato**
-   - Retorna 202 Accepted al encolar el job
-   - Frontend recibe `operation_id` para tracking
-   - No bloquea la petición HTTP
+2. **SendBudgetAlertJob** — Envía email/notificación cuando se supera el presupuesto
+   - Disparado por Observers en el modelo Transaction
+
+3. **ImportTransactionsJob** — Importa transacciones masivas desde CSV/Excel
+   - Usa Laravel Streams para manejar archivos grandes sin cargar todo en memoria
 
 ---
 
-## 📦 Iniciar Queue Workers
+## Crear un Job
+
+```bash
+php artisan make:job GenerateReportJob
+```
+
+Estructura básica:
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+
+class GenerateReportJob implements ShouldQueue
+{
+    use Queueable;
+
+    public int $tries = 3;
+    public int $timeout = 300; // 5 minutos
+
+    public function __construct(
+        private readonly int $userId,
+        private readonly string $period
+    ) {}
+
+    public function handle(): void
+    {
+        // Lógica de generación del reporte
+        // Usar LazyCollection / cursor() para grandes volúmenes
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        // Notificar al usuario del fallo
+    }
+}
+```
+
+Disparar el job:
+
+```php
+GenerateReportJob::dispatch($userId, $period);
+// O con delay:
+GenerateReportJob::dispatch($userId, $period)->delay(now()->addSeconds(5));
+```
+
+---
+
+## Iniciar Queue Workers
 
 ### Opción 1: Desarrollo (Manual)
 
 ```bash
-# Iniciar worker en terminal
-php artisan queue:work --tries=1 --timeout=2000
-
-# O usar composer script
-composer dev
+php artisan queue:work --tries=3 --timeout=300
 ```
 
 ### Opción 2: Producción (Supervisor)
@@ -77,7 +118,7 @@ tail -f storage/logs/worker.log
 
 ---
 
-## 🔧 Configuración de Queue Driver
+## Configuración de Queue Driver
 
 Asegúrate de que tu `.env` tenga:
 
@@ -89,187 +130,62 @@ Las tablas `jobs`, `job_batches` y `failed_jobs` ya están migradas.
 
 ---
 
-## 📡 Ejemplo de Uso desde Frontend
+## Ejemplo de Uso — Reporte en Background
 
-### 1. Iniciar Instalación
+### Backend: disparar el job
 
-```javascript
-const response = await fetch('/api/server/1/install', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    operationId: 'op_123456',
-    domain: 'ejemplo.com',
-    email: 'admin@ejemplo.com'
-  })
-});
-
-const data = await response.json();
-// Response inmediato:
-// {
-//   "success": true,
-//   "data": {
-//     "id": 1,
-//     "name": "Server 1",
-//     "operation_id": "op_123456",
-//     "status": "queued"
-//   },
-//   "message": "Instalación iniciada en segundo plano"
-// }
+```php
+// En el controlador de reportes:
+GenerateReportJob::dispatch(auth()->id(), $request->period);
+return $this->successResponse(
+    ['message' => 'El reporte se está generando, recibirás una notificación'],
+    'Proceso iniciado',
+    202
+);
 ```
 
-### 2. Escuchar Progreso vía WebSocket (Reverb)
+### Frontend: escuchar el resultado vía Broadcasting
 
 ```javascript
-// En el frontend, conectar a Laravel Reverb
-const echo = new Echo({
-  broadcaster: 'reverb',
-  key: import.meta.env.VITE_REVERB_APP_KEY,
-  wsHost: import.meta.env.VITE_REVERB_HOST,
-  wsPort: import.meta.env.VITE_REVERB_PORT,
-});
-
-// Escuchar progreso
-echo.channel('server-actions')
-  .listen('ServerActionProgress', (event) => {
-    console.log(event.operationId, event.message, event.progress);
-    // Actualizar UI: "Instalando dependencias... 60%"
-  })
-  .listen('ServerActionComplete', (event) => {
-    console.log('Completado!', event.message);
-    // Mostrar success notification
-  })
-  .listen('ServerActionError', (event) => {
-    console.error('Error:', event.message);
-    // Mostrar error notification
+window.Echo.private(`user.${userId}`)
+  .listen('ReportReady', (event) => {
+    // Mostrar enlace de descarga o notificación
+    console.log('Reporte listo:', event.downloadUrl);
   });
 ```
 
 ---
 
-## 🔍 Monitoreo de Jobs
+## Monitoreo de Jobs
 
-### Ver jobs en cola
 ```bash
+# Ver jobs en cola
 php artisan queue:monitor database
-```
 
-### Ver failed jobs
-```bash
+# Ver failed jobs
 php artisan queue:failed
-```
 
-### Reintentar failed job
-```bash
+# Reintentar un job fallido
 php artisan queue:retry <job-id>
-```
 
-### Limpiar failed jobs
-```bash
+# Limpiar failed jobs
 php artisan queue:flush
-```
 
----
-
-## 🎯 Validaciones Implementadas
-
-### InstallServerJob
-
-1. ✅ Verifica conexión SSH (`echo "test"`)
-2. ✅ Crea carpeta de instalación
-3. ✅ Valida que carpeta existe (`test -d`)
-4. ✅ Sube script correctamente
-5. ✅ Valida que archivo se subió (`test -f`)
-6. ✅ Aplica permisos (`chmod +x`)
-7. ✅ Verifica permisos (`test -x`)
-8. ✅ Ejecuta con timeout (`timeout 1500`)
-9. ✅ Captura exit code (`echo EXIT_CODE:$?`)
-10. ✅ Valida exit code (0 = éxito, 124 = timeout)
-11. ✅ Actualiza DB solo si éxito
-12. ✅ Broadcast eventos en cada paso
-
-### ChangeDomainJob
-
-1. ✅ Mismas validaciones que InstallServerJob
-2. ✅ Timeout de 10 minutos (`timeout 600`)
-3. ✅ Valida formato de dominio en controller
-4. ✅ Reemplaza variables dinámicamente (old_domain, new_domain, php_version)
-
----
-
-## 🐛 Debugging
-
-### Ver logs del job
-```bash
+# Ver logs del worker
 tail -f storage/logs/laravel.log
-```
 
-### Ver output del script shell
-El output completo se guarda en:
-- Laravel Log: `storage/logs/laravel.log`
-- Activity Log: `server_activity_logs.response_data`
-
-### Verificar que el script se ejecutó
-```bash
-# En el servidor remoto
-ls -la /home/tmp/install.sh
-cat /home/tmp/install.sh
+# Reiniciar workers (después de deploy)
+php artisan queue:restart
 ```
 
 ---
 
-## ⚠️ Notas Importantes
+## Opciones Adicionales (Planificado)
 
-1. **Timeout del Job vs Timeout del Script**
-   - Job timeout: 1800s (30min) para InstallServerJob
-   - Script timeout: 1500s (25min) vía comando `timeout`
-   - SSH timeout: 1600s (26min) vía `$ssh->setTimeout()`
-
-2. **Exit Codes Especiales**
-   - `0` = Éxito
-   - `124` = Timeout del comando `timeout`
-   - `> 0` = Error en el script
-
-3. **Reiniciar Workers**
-   Después de cambios en código de Jobs:
-   ```bash
-   sudo supervisorctl restart laravel-worker:*
-   # O en desarrollo:
-   php artisan queue:restart
-   ```
-
-4. **Capacidad**
-   - Configuración actual: 2 workers en paralelo
-   - Ajustar `numprocs=2` en supervisor config según necesidad
+- **Laravel Horizon** — Dashboard visual para Redis queues
+- **Batch Jobs** — Para importar miles de transacciones en paralelo
+- **Rate Limiting** — Limitar jobs pesados por usuario
 
 ---
 
-## 📊 Estados de ServerActivityLog
-
-- `queued` - Job encolado, esperando procesamiento
-- `in_progress` - Job en ejecución (auto-actualizado por el Job)
-- `completed` - Finalizado exitosamente
-- `failed` - Falló con error
-
----
-
-## 🎉 Próximos Pasos (Opcional)
-
-1. **Laravel Horizon** (para Redis queue)
-   ```bash
-   composer require laravel/horizon
-   php artisan horizon:install
-   ```
-
-2. **Notificaciones por Email/Slack**
-   Agregar en método `failed()` de los Jobs
-
-3. **Rate Limiting**
-   Limitar instalaciones simultáneas por servidor
-
-4. **Retry Logic**
-   Cambiar `$tries = 1` a `$tries = 3` con backoff
-
----
-
-¡Sistema de Jobs en segundo plano listo para producción! 🚀
+**Referencia:** [CODING-STANDARDS.md → Colas de Trabajo](CODING-STANDARDS.md)

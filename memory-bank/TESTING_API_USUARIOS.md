@@ -6,14 +6,14 @@ Este archivo contiene ejemplos de requests HTTP que puedes usar en Postman o sim
 
 ### Request
 ```http
-GET http://paneladmin.local/api/user?take=10&skip=0 HTTP/1.1
+GET http://finanzas.local/api/user?take=10&skip=0 HTTP/1.1
 Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 ```
 
 ### Con búsqueda
 ```http
-GET http://paneladmin.local/api/user?take=10&skip=0&search=john HTTP/1.1
+GET http://finanzas.local/api/user?take=10&skip=0&search=john HTTP/1.1
 Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 ```
@@ -65,7 +65,7 @@ Content-Type: application/json
 
 ### Request
 ```http
-POST http://paneladmin.local/api/user HTTP/1.1
+POST http://finanzas.local/api/user HTTP/1.1
 Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 
@@ -159,7 +159,7 @@ Content-Type: application/json
 
 ### Request
 ```http
-GET http://paneladmin.local/api/user/1 HTTP/1.1
+GET http://finanzas.local/api/user/1 HTTP/1.1
 Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 ```
@@ -211,7 +211,7 @@ Content-Type: application/json
 
 ### Request - Cambiar rol
 ```http
-PUT http://paneladmin.local/api/user/1 HTTP/1.1
+PUT http://finanzas.local/api/user/1 HTTP/1.1
 Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 
@@ -222,7 +222,7 @@ Content-Type: application/json
 
 ### Request - Cambiar múltiples campos
 ```http
-PUT http://paneladmin.local/api/user/1 HTTP/1.1
+PUT http://finanzas.local/api/user/1 HTTP/1.1
 Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 
@@ -237,7 +237,7 @@ Content-Type: application/json
 
 ### Request - Cambiar contraseña
 ```http
-PUT http://paneladmin.local/api/user/1 HTTP/1.1
+PUT http://finanzas.local/api/user/1 HTTP/1.1
 Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 
@@ -294,7 +294,7 @@ Content-Type: application/json
 
 ### Request
 ```http
-DELETE http://paneladmin.local/api/user/5 HTTP/1.1
+DELETE http://finanzas.local/api/user/5 HTTP/1.1
 Authorization: Bearer YOUR_TOKEN
 Content-Type: application/json
 ```
@@ -332,7 +332,7 @@ Content-Type: application/json
 
 ### Login (obtener token)
 ```bash
-curl -X POST "http://paneladmin.local/api/login" \
+curl -X POST "http://finanzas.local/api/login" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@example.com",
@@ -342,14 +342,14 @@ curl -X POST "http://paneladmin.local/api/login" \
 
 ### Listar usuarios
 ```bash
-curl -X GET "http://paneladmin.local/api/user?take=10&skip=0" \
+curl -X GET "http://finanzas.local/api/user?take=10&skip=0" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json"
 ```
 
 ### Crear usuario
 ```bash
-curl -X POST "http://paneladmin.local/api/user" \
+curl -X POST "http://finanzas.local/api/user" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -364,7 +364,7 @@ curl -X POST "http://paneladmin.local/api/user" \
 
 ### Actualizar usuario
 ```bash
-curl -X PUT "http://paneladmin.local/api/user/1" \
+curl -X PUT "http://finanzas.local/api/user/1" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -375,7 +375,7 @@ curl -X PUT "http://paneladmin.local/api/user/1" \
 
 ### Eliminar usuario
 ```bash
-curl -X DELETE "http://paneladmin.local/api/user/5" \
+curl -X DELETE "http://finanzas.local/api/user/5" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json"
 ```
@@ -408,7 +408,7 @@ Puedes importar esta colección en Postman:
           "raw": "{\"email\":\"admin@example.com\",\"password\":\"password\"}"
         },
         "url": {
-          "raw": "http://paneladmin.local/api/login",
+          "raw": "http://finanzas.local/api/login",
           "protocol": "http",
           "host": ["paneladmin", "local"],
           "path": ["api", "login"]
@@ -426,7 +426,7 @@ Puedes importar esta colección en Postman:
           }
         ],
         "url": {
-          "raw": "http://paneladmin.local/api/user?take=10&skip=0",
+          "raw": "http://finanzas.local/api/user?take=10&skip=0",
           "protocol": "http",
           "host": ["paneladmin", "local"],
           "path": ["api", "user"],
@@ -462,7 +462,7 @@ Puedes importar esta colección en Postman:
           "raw": "{\"name\":\"New User\",\"email\":\"newuser@example.com\",\"password\":\"TestPass123\",\"password_confirmation\":\"TestPass123\",\"active\":1,\"id_rol\":2}"
         },
         "url": {
-          "raw": "http://paneladmin.local/api/user",
+          "raw": "http://finanzas.local/api/user",
           "protocol": "http",
           "host": ["paneladmin", "local"],
           "path": ["api", "user"]
@@ -480,7 +480,7 @@ Puedes importar esta colección en Postman:
           }
         ],
         "url": {
-          "raw": "http://paneladmin.local/api/user/1",
+          "raw": "http://finanzas.local/api/user/1",
           "protocol": "http",
           "host": ["paneladmin", "local"],
           "path": ["api", "user", "1"]
@@ -506,7 +506,7 @@ Puedes importar esta colección en Postman:
           "raw": "{\"name\":\"Updated Name\",\"id_rol\":3}"
         },
         "url": {
-          "raw": "http://paneladmin.local/api/user/1",
+          "raw": "http://finanzas.local/api/user/1",
           "protocol": "http",
           "host": ["paneladmin", "local"],
           "path": ["api", "user", "1"]
@@ -524,7 +524,7 @@ Puedes importar esta colección en Postman:
           }
         ],
         "url": {
-          "raw": "http://paneladmin.local/api/user/5",
+          "raw": "http://finanzas.local/api/user/5",
           "protocol": "http",
           "host": ["paneladmin", "local"],
           "path": ["api", "user", "5"]

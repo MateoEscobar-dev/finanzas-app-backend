@@ -1,4 +1,7 @@
-# Laravel Reverb - Guía de Instalación y Configuración
+# Laravel Reverb — Guía de Instalación y Configuración
+
+> Broadcasting en tiempo real para la app de finanzas personales.
+> Casos de uso: alertas de presupuesto, notificaciones de reporte listo, sincronización multi-dispositivo.
 
 ## Instalación
 
@@ -21,23 +24,25 @@ Este comando creará:
 
 ## Configuración
 
-Las variables de entorno ya están configuradas en [.env](.env):
+Variables de entorno en `.env`:
 
 ```env
 BROADCAST_CONNECTION=reverb
 
 # Laravel Reverb WebSocket
-REVERB_APP_ID=8ec0bd6c-8bae-4162-a0ed-13e6ac52cd98
-REVERB_APP_KEY=e2f77098de874a4890557afd5b068b65040b8f7ccc30280beec56d361749d346
-REVERB_APP_SECRET=607c3dcd5b2267c274d27826a2ca69f5d9ff8d4706c0d9344adf8d3f791730a2
-REVERB_HOST=paneladmin.local
+REVERB_APP_ID=<genera con: cat /proc/sys/kernel/random/uuid>
+REVERB_APP_KEY=<genera con: openssl rand -hex 32>
+REVERB_APP_SECRET=<genera con: openssl rand -hex 32>
+REVERB_HOST=finanzas.local
 REVERB_PORT=6001
 REVERB_SCHEME=http
 ```
 
+> Ver [REVERB_CREDENTIALS.md](REVERB_CREDENTIALS.md) para detalles sobre cómo generar y sincronizar credenciales con el frontend.
+
 ### Configuración de Broadcasting
 
-El archivo [config/broadcasting.php](config/broadcasting.php) ya está configurado para usar `reverb` como broadcaster por defecto.
+El archivo `config/broadcasting.php` debe tener `reverb` como broadcaster por defecto.
 
 ## Iniciar el Servidor WebSocket
 
@@ -61,8 +66,6 @@ php artisan reverb:start --host=0.0.0.0 --port=6001
 
 ## Configuración del Frontend
 
-En tu aplicación frontend (React/Vue/etc), necesitas configurar Laravel Echo para conectarse a Reverb:
-
 ### 1. Instalar dependencias
 
 ```bash
@@ -79,165 +82,72 @@ window.Pusher = Pusher;
 
 window.Echo = new Echo({
     broadcaster: "reverb",
-    key: "e2f77098de874a4890557afd5b068b65040b8f7ccc30280beec56d361749d346",
-    wsHost: "paneladmin.local",
-    wsPort: 6001,
-    wssPort: 6001,
-    forceTLS: false,
+    key: import.meta.env.VITE_REVERB_APP_KEY,
+    wsHost: import.meta.env.VITE_REVERB_HOST,   // finanzas.local
+    wsPort: import.meta.env.VITE_REVERB_PORT,
+    wssPort: import.meta.env.VITE_REVERB_PORT,
+    forceTLS: import.meta.env.VITE_REVERB_SCHEME === "https",
     enabledTransports: ["ws", "wss"],
     disableStats: true,
 });
 ```
 
-### 3. Escuchar eventos de servidor
+### 3. Escuchar eventos de finanzas
 
 ```javascript
-const operationId = "op_1705595400000_a1b2c3";
-
-// Suscribirse al canal de la operación
-window.Echo.channel(`server-actions.${operationId}`)
-    .listen(".progress", (event) => {
-        console.log("Progress:", event);
-        // event.message, event.progress, event.severity
+// Canal privado del usuario autenticado
+window.Echo.private(`user.${userId}`)
+    .listen("BudgetAlert", (event) => {
+        // event.category, event.percentage, event.message
+        showNotification(`Alerta: ${event.message}`);
     })
-    .listen(".complete", (event) => {
-        console.log("Complete:", event);
-        // event.message
-    })
-    .listen(".error", (event) => {
-        console.error("Error:", event);
-        // event.message, event.errorCode
+    .listen("ReportReady", (event) => {
+        // event.downloadUrl, event.reportType
+        showDownloadButton(event.downloadUrl);
     });
 ```
 
-## Estructura de Eventos WebSocket
+## Estructura de Eventos de Finanzas
 
-### Evento: Progress
-
-```json
-{
-    "type": "progress",
-    "operationId": "op_1705595400000_a1b2c3",
-    "message": "Conectando al servidor...",
-    "severity": "info",
-    "progress": 10,
-    "timestamp": "2026-01-18T10:30:15.000Z"
-}
-```
-
-### Evento: Complete
+### Evento: BudgetAlert
 
 ```json
 {
-    "type": "complete",
-    "operationId": "op_1705595400000_a1b2c3",
-    "message": "Operación completada correctamente",
-    "severity": "success",
-    "progress": 100,
-    "timestamp": "2026-01-18T10:32:45.000Z"
+    "userId": 1,
+    "category": "Comida",
+    "budgetAmount": 500000,
+    "spentAmount": 420000,
+    "percentage": 84,
+    "message": "Has usado el 84% de tu presupuesto en Comida",
+    "timestamp": "2026-04-20T10:30:00.000Z"
 }
 ```
 
-### Evento: Error
+### Evento: ReportReady
 
 ```json
 {
-    "type": "error",
-    "operationId": "op_1705595400000_a1b2c3",
-    "message": "Error: No se puede conectar al servidor",
-    "severity": "error",
-    "progress": 30,
-    "errorCode": "CONNECTION_TIMEOUT",
-    "timestamp": "2026-01-18T10:31:20.000Z"
+    "userId": 1,
+    "reportType": "monthly",
+    "period": "2026-04",
+    "downloadUrl": "/api/reports/download/abc123",
+    "timestamp": "2026-04-20T10:35:00.000Z"
 }
 ```
 
-## Endpoints Implementados
+## Canales por Usar en Finanzas Personales
 
-### 1. Validar Estado del Servidor
+| Canal | Tipo | Propósito |
+|-------|------|-----------|
+| `user.{id}` | Privado | Notificaciones personales del usuario |
+| `finance.{userId}` | Privado | Actualizaciones de balance en tiempo real |
 
-```bash
-POST /api/server/{id}/validate-status
-Content-Type: application/json
-
-{
-  "operationId": "op_1705595400000_a1b2c3"
-}
-```
-
-### 2. Instalar Servidor
-
-```bash
-POST /api/server/{id}/install
-Content-Type: application/json
-
-{
-  "domain": "nuevo.ejemplo.com",
-  "email": "admin@ejemplo.com",
-  "operationId": "op_1705595400000_a1b2c3"
-}
-```
-
-### 3. Agregar Programa
-
-```bash
-POST /api/server/{id}/add-program
-Content-Type: application/json
-
-{
-  "programId": 5,
-  "operationId": "op_1705595400000_a1b2c3"
-}
-```
-
-### 4. Cambiar Dominio
-
-```bash
-POST /api/server/{id}/change-domain
-Content-Type: application/json
-
-{
-  "newDomain": "nuevo-dominio.com",
-  "operationId": "op_1705595400000_a1b2c3"
-}
-```
-
-### 5. Desactivar Servicio
-
-```bash
-POST /api/server/{id}/deactivate-service
-Content-Type: application/json
-
-{
-  "operationId": "op_1705595400000_a1b2c3"
-}
-```
-
-### 6. Activar Servicio
-
-```bash
-POST /api/server/{id}/activate-service
-Content-Type: application/json
-
-{
-  "operationId": "op_1705595400000_a1b2c3"
-}
-```
-
-### 7. Programas Disponibles
-
-```bash
-GET /api/servers/available-programs
-```
-
-## Ejecutar con Supervisor (Producción)
-
-Crear archivo `/etc/supervisor/conf.d/reverb.conf`:
+## Producción — Supervisor
 
 ```ini
 [program:reverb]
-command=php /var/www/html/panel_admin/back_api_panel_admin/artisan reverb:start --host=0.0.0.0 --port=8080
-directory=/var/www/html/panel_admin/back_api_panel_admin
+command=php /var/www/html/finanzas/finanzas-app-backend/artisan reverb:start --host=0.0.0.0 --port=6001
+directory=/var/www/html/finanzas/finanzas-app-backend
 user=www-data
 autostart=true
 autorestart=true
@@ -245,75 +155,32 @@ redirect_stderr=true
 stdout_logfile=/var/log/supervisor/reverb.log
 ```
 
-Luego:
+## Referencia
+
+- [REVERB_CREDENTIALS.md](REVERB_CREDENTIALS.md) — Credenciales y sincronización con frontend
+- [CODING-STANDARDS.md → Broadcasting](CODING-STANDARDS.md) — Patrones de uso en el proyecto
+
+## Iniciar el Servidor WebSocket
+
+### Modo Desarrollo
 
 ```bash
-sudo supervisorctl reread
-sudo supervisorctl update
-sudo supervisorctl start reverb
+php artisan reverb:start
 ```
 
-## Logs y Auditoría
-
-Todos los eventos se registran en la tabla `server_activity_logs`:
-
-- `operation_id`: ID único de la operación
-- `server_id`: ID del servidor
-- `action`: Acción ejecutada (validate-status, install, etc.)
-- `user_id`: Usuario que ejecutó la acción
-- `status`: pending, in_progress, completed, failed
-- `request_data`: Datos de la petición (JSON)
-- `response_data`: Datos de la respuesta (JSON)
-- `error_message`: Mensaje de error si falla
-- `started_at`: Fecha de inicio
-- `completed_at`: Fecha de finalización
-
-## Troubleshooting
-
-### El servidor WebSocket no inicia
+### Modo Desarrollo con Debug
 
 ```bash
-# Verificar si el puerto está en uso
-sudo netstat -tlnp | grep 8080
-
-# Verificar logs de Laravel
-tail -f storage/logs/laravel.log
+php artisan reverb:start --debug
 ```
 
-### Frontend no se conecta
+### Modo Producción
 
-1. Verificar que Reverb esté corriendo
-2. Verificar firewall/puertos
-3. Verificar que las credenciales en frontend coincidan con `.env`
-
-### Eventos no se reciben
-
-1. Verificar que el `operationId` sea correcto
-2. Verificar en logs de Laravel que los eventos se estén disparando
-3. Usar debug mode: `php artisan reverb:start --debug`
-
-## Testing con Postman
-
-1. Hacer POST a cualquier endpoint con `operationId`
-2. Abrir WebSocket connection en otra pestaña: `ws://127.0.0.1:8080`
-3. Enviar mensaje de suscripción:
-
-```json
-{
-    "event": "pusher:subscribe",
-    "data": {
-        "channel": "server-actions.op_1705595400000_a1b2c3"
-    }
-}
+```bash
+php artisan reverb:start --host=0.0.0.0 --port=6001
 ```
 
-4. Observar los eventos en tiempo real
+## Referencia
 
-## Notas Importantes
-
-1. **Seguridad**: En producción, usar `wss://` (HTTPS) y configurar certificados SSL
-2. **Autenticación**: Los endpoints requieren autenticación JWT
-3. **Permisos**: Verificar que el usuario tenga permisos para ejecutar acciones en servidores
-4. **Rate Limiting**: Máximo 10 operaciones por usuario por minuto
-5. **Scripts**: Los scripts `install.sh` y `change-domain.sh` deben estar en `storage/app/sh/`
-6. **SSH**: La conexión SSH usa phpseclib3, las contraseñas se desencriptan con Laravel Crypt
+- [REVERB_CREDENTIALS.md](REVERB_CREDENTIALS.md) — Credenciales y sincronización con frontend
+- [CODING-STANDARDS.md → Broadcasting](CODING-STANDARDS.md) — Patrones de uso en el proyecto

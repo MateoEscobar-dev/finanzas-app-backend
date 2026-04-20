@@ -7,15 +7,15 @@
 ## 🔑 Credenciales Generadas (Ya configuradas en .env)
 
 ```env
-REVERB_APP_ID=8ec0bd6c-8bae-4162-a0ed-13e6ac52cd98
-REVERB_APP_KEY=e2f77098de874a4890557afd5b068b65040b8f7ccc30280beec56d361749d346
-REVERB_APP_SECRET=607c3dcd5b2267c274d27826a2ca69f5d9ff8d4706c0d9344adf8d3f791730a2
-REVERB_HOST=paneladmin.local
+REVERB_APP_ID=<genera con: cat /proc/sys/kernel/random/uuid>
+REVERB_APP_KEY=<genera con: openssl rand -hex 32>
+REVERB_APP_SECRET=<genera con: openssl rand -hex 32>
+REVERB_HOST=finanzas.local
 REVERB_PORT=6001
 REVERB_SCHEME=http
 ```
 
-Estas credenciales fueron generadas usando:
+Estas credenciales deben generarse localmente y solo necesitan coincidir entre backend y frontend:
 
 - `REVERB_APP_ID`: UUID aleatorio
 - `REVERB_APP_KEY`: Hash seguro de 64 caracteres (openssl rand -hex 32)
@@ -29,7 +29,7 @@ Estas credenciales fueron generadas usando:
 this.echo = new Echo({
     broadcaster: "reverb",
     key: "a2d3bd8596bbfc12f10d", // ❌ Esta es una key de Pusher
-    wsHost: "paneladmin.local",
+    wsHost: "finanzas.local",
     wsPort: 6001,
     wssPort: 6001,
     forceTLS: false,
@@ -48,8 +48,8 @@ window.Pusher = Pusher;
 
 window.Echo = new Echo({
     broadcaster: "reverb",
-    key: "e2f77098de874a4890557afd5b068b65040b8f7ccc30280beec56d361749d346", // ✅ Usar REVERB_APP_KEY del .env
-    wsHost: "paneladmin.local", // ✅ Mismo que REVERB_HOST
+    key: import.meta.env.VITE_REVERB_APP_KEY, // ✅ Usar REVERB_APP_KEY del .env
+    wsHost: import.meta.env.VITE_REVERB_HOST, // ✅ Mismo que REVERB_HOST (finanzas.local)
     wsPort: 6001, // ✅ Mismo que REVERB_PORT
     wssPort: 6001,
     forceTLS: false, // ✅ false porque usamos http (REVERB_SCHEME=http)
@@ -65,8 +65,8 @@ Si usas variables de entorno en tu frontend (React con Vite, Next.js, etc.):
 ### React con Vite (.env en frontend)
 
 ```env
-VITE_REVERB_APP_KEY=e2f77098de874a4890557afd5b068b65040b8f7ccc30280beec56d361749d346
-VITE_REVERB_HOST=paneladmin.local
+VITE_REVERB_APP_KEY=<mismo valor que REVERB_APP_KEY del backend>
+VITE_REVERB_HOST=finanzas.local
 VITE_REVERB_PORT=6001
 VITE_REVERB_SCHEME=http
 ```
@@ -89,8 +89,8 @@ window.Echo = new Echo({
 ### Next.js (.env.local en frontend)
 
 ```env
-NEXT_PUBLIC_REVERB_APP_KEY=e2f77098de874a4890557afd5b068b65040b8f7ccc30280beec56d361749d346
-NEXT_PUBLIC_REVERB_HOST=paneladmin.local
+NEXT_PUBLIC_REVERB_APP_KEY=<mismo valor que REVERB_APP_KEY del backend>
+NEXT_PUBLIC_REVERB_HOST=finanzas.local
 NEXT_PUBLIC_REVERB_PORT=6001
 NEXT_PUBLIC_REVERB_SCHEME=http
 ```
@@ -113,7 +113,7 @@ window.Echo = new Echo({
 ## 🚀 Iniciar Laravel Reverb
 
 ```bash
-cd /var/www/html/panel_admin/back_api_panel_admin
+cd /var/www/html/finanzas/finanzas-app-backend
 
 # Iniciar servidor WebSocket en puerto 6001
 php artisan reverb:start --host=0.0.0.0 --port=6001 --debug
@@ -145,12 +145,10 @@ window.Echo.connector.pusher.connection.bind("error", (err) => {
     console.error("❌ Error de conexión:", err);
 });
 
-// Suscribirse a canal de prueba
-const operationId = "test-123";
-window.Echo.channel(`server-actions.${operationId}`)
-    .listen(".progress", (e) => console.log("Progress:", e))
-    .listen(".complete", (e) => console.log("Complete:", e))
-    .listen(".error", (e) => console.error("Error:", e));
+// Suscribirse a canal privado del usuario autenticado
+window.Echo.private(`user.${userId}`)
+    .listen('ReportReady', (e) => console.log('Reporte listo:', e))
+    .listen('BudgetAlert', (e) => console.warn('Alerta de presupuesto:', e));
 ```
 
 ### 3. Test desde backend (trigger manual)
@@ -158,9 +156,9 @@ window.Echo.channel(`server-actions.${operationId}`)
 ```bash
 php artisan tinker
 
-# En tinker:
-use App\Events\ServerActionProgress;
-broadcast(new ServerActionProgress('test-123', 'Mensaje de prueba', 'info', 50));
+# En tinker (ejemplo con evento de finanzas):
+# use App\Events\BudgetAlert;
+# broadcast(new BudgetAlert($userId, 'Has superado el 80% de tu presupuesto en Comida'));
 exit
 ```
 
@@ -180,8 +178,8 @@ Frontend:
 ```javascript
 window.Echo = new Echo({
     broadcaster: "reverb",
-    key: "e2f77098de874a4890557afd5b068b65040b8f7ccc30280beec56d361749d346",
-    wsHost: "paneladmin.local",
+    key: import.meta.env.VITE_REVERB_APP_KEY,
+    wsHost: import.meta.env.VITE_REVERB_HOST,
     wsPort: 443,
     wssPort: 443,
     forceTLS: true, // ✅ true para HTTPS
@@ -211,8 +209,8 @@ location /reverb {
 
 ```ini
 [program:reverb]
-command=php /var/www/html/panel_admin/back_api_panel_admin/artisan reverb:start --host=0.0.0.0 --port=6001
-directory=/var/www/html/panel_admin/back_api_panel_admin
+command=php /var/www/html/finanzas/finanzas-app-backend/artisan reverb:start --host=0.0.0.0 --port=6001
+directory=/var/www/html/finanzas/finanzas-app-backend
 user=www-data
 autostart=true
 autorestart=true
@@ -265,22 +263,22 @@ Sí, son hashes aleatorios de 64 caracteres generados con OpenSSL. En producció
 ### Backend (.env)
 
 ```env
-REVERB_APP_ID=8ec0bd6c-8bae-4162-a0ed-13e6ac52cd98
-REVERB_APP_KEY=e2f77098de874a4890557afd5b068b65040b8f7ccc30280beec56d361749d346
-REVERB_APP_SECRET=607c3dcd5b2267c274d27826a2ca69f5d9ff8d4706c0d9344adf8d3f791730a2
-REVERB_HOST=paneladmin.local
+# Genera tus propias credenciales con:
+# cat /proc/sys/kernel/random/uuid   → para APP_ID
+# openssl rand -hex 32               → para APP_KEY y APP_SECRET
+REVERB_HOST=finanzas.local
 REVERB_PORT=6001
 REVERB_SCHEME=http
 ```
 
-### Frontend (cambiar en tu código)
+### Frontend (variables de entorno)
 
 ```javascript
-// ANTES (Pusher)
+// ANTES (Pusher - INCORRECTO)
 key: "a2d3bd8596bbfc12f10d";
 
-// DESPUÉS (Reverb)
-key: "e2f77098de874a4890557afd5b068b65040b8f7ccc30280beec56d361749d346";
+// DESPUÉS (Reverb - CORRECTO)
+key: import.meta.env.VITE_REVERB_APP_KEY; // Valor del .env del backend
 ```
 
 ### Comando para iniciar

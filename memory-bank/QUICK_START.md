@@ -1,151 +1,165 @@
-# 🚀 Guía Rápida - Queue Worker & WebSocket
+# ⚡ Quick Start — Finanzas App Backend
 
-## Para DESARROLLO (Testing Local)
+## Entorno de desarrollo
 
-### Un solo comando:
+### Requisitos
+
+- PHP 8.3+
+- Composer 2+
+- MySQL 8+
+- Node.js (para assets, opcional)
+
+### Instalación completa
+
 ```bash
-./start-dev.sh
-```
-O también:
-```bash
-composer dev
+# 1. Instalar dependencias PHP
+composer install
+
+# 2. Configurar entorno
+cp .env.example .env
+php artisan key:generate
+
+# 3. Configurar base de datos en .env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=finanzas
+DB_USERNAME=root
+DB_PASSWORD=tu_password
+
+# 4. Migrar base de datos
+php artisan migrate
+
+# 5. Poblar datos iniciales
+php artisan db:seed
+
+# 6. Iniciar servidor de desarrollo
+php artisan serve
 ```
 
-Esto inicia:
-- ✅ Queue Worker (procesa jobs en segundo plano)
-- ✅ Laravel Reverb (WebSocket en puerto 6001)
-
-**Para detener:** Presiona `Ctrl+C`
+La API estará disponible en `http://localhost:8000/api`
 
 ---
 
-## Para PRODUCCIÓN (Servidor)
+## Servicios opcionales
 
-### 1️⃣ Primera vez (Instalación):
+### Queue Worker (para Jobs asíncronos)
+
 ```bash
-sudo ./setup-production.sh
+# Desarrollo (manual)
+php artisan queue:work
+
+# Con más detalles
+php artisan queue:work --verbose --tries=3
 ```
 
-Esto instala y configura automáticamente:
-- ✅ Supervisor
-- ✅ Queue Worker (2 workers en paralelo)
-- ✅ Laravel Reverb
-- ✅ Inicio automático al arrancar servidor
-- ✅ Reinicio automático si falla
+### WebSockets con Laravel Reverb
 
-### 2️⃣ Control diario:
 ```bash
-# Ver estado
-sudo ./production-control.sh status
+# Iniciar servidor WebSocket
+php artisan reverb:start
 
-# Reiniciar (después de cambios en código)
-sudo ./production-control.sh restart
-
-# Ver logs en tiempo real
-sudo ./production-control.sh logs
-
-# Detener
-sudo ./production-control.sh stop
-
-# Iniciar
-sudo ./production-control.sh start
+# Con debug
+php artisan reverb:start --debug
 ```
 
 ---
 
-## 🧪 Probar que funciona
+## Testing
 
-### 1. Inicia los servicios (desarrollo o producción)
-
-### 2. Haz una petición:
 ```bash
-curl -X POST http://localhost/api/server/1/install \
+# Todos los tests
+php artisan test
+
+# Tests de un archivo específico
+php artisan test tests/Feature/UserTest.php
+
+# Con cobertura
+php artisan test --coverage
+```
+
+---
+
+## Endpoints de prueba rápida
+
+### 1. Login
+
+```bash
+curl -X POST http://localhost:8000/api/login \
   -H "Content-Type: application/json" \
-  -d '{
-    "operationId": "test_123",
-    "domain": "test.com",
-    "email": "test@test.com"
-  }'
+  -d '{"email":"admin@finanzas.com","password":"password"}'
 ```
 
-### 3. Verás en los logs:
-```
-[2026-01-21 10:30:00] Processing: App\Jobs\InstallServerJob
-[2026-01-21 10:30:05] Conectando al servidor...
-[2026-01-21 10:30:10] Verificando conexión SSH...
-...
-[2026-01-21 10:35:00] Processed: App\Jobs\InstallServerJob
-```
+### 2. Usar el token
 
-### 4. El frontend recibirá eventos WebSocket en tiempo real:
-```javascript
-ServerActionProgress: "Instalando... 40%"
-ServerActionProgress: "Configurando... 70%"
-ServerActionComplete: "¡Completado!"
-```
-
----
-
-## 📊 Diferencias
-
-| Aspecto | Desarrollo | Producción |
-|---------|-----------|------------|
-| **Comando** | `./start-dev.sh` | `sudo ./setup-production.sh` (una vez) |
-| **Terminal** | Necesita terminal abierta | Corre en background |
-| **Logs** | Se ven en terminal | `sudo ./production-control.sh logs` |
-| **Al reiniciar PC** | Hay que iniciar manual | Se inicia automático |
-| **Workers** | 1 worker | 2 workers en paralelo |
-| **Gestión** | Ctrl+C para detener | `sudo ./production-control.sh` |
-
----
-
-## ❓ Solución de Problemas
-
-### "No procesa los jobs"
 ```bash
-# Verifica que el worker esté corriendo
-ps aux | grep queue:work
-
-# Si no está, inícialo
-./start-dev.sh  # desarrollo
-# o
-sudo ./production-control.sh start  # producción
+curl -X GET http://localhost:8000/api/me \
+  -H "Authorization: Bearer TU_TOKEN_AQUI"
 ```
 
-### "WebSocket no conecta"
+### 3. Listar usuarios
+
 ```bash
-# Verifica que Reverb esté corriendo
-ps aux | grep reverb:start
-
-# Verifica el puerto
-netstat -tlnp | grep 6001
-```
-
-### "Después de cambios en código no funciona"
-```bash
-# Desarrollo: Ctrl+C y volver a iniciar
-./start-dev.sh
-
-# Producción: Reiniciar servicios
-sudo ./production-control.sh restart
+curl -X GET http://localhost:8000/api/user \
+  -H "Authorization: Bearer TU_TOKEN_AQUI"
 ```
 
 ---
 
-## 🎯 Checklist Rápido
+## Comandos útiles de desarrollo
 
-### Desarrollo:
-- [x] `./start-dev.sh` corriendo
-- [x] Ver logs en terminal
-- [x] Hacer petición de prueba
-- [x] Verificar que procesa el job
+```bash
+# Limpiar caché
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
 
-### Producción:
-- [x] `sudo ./setup-production.sh` (solo primera vez)
-- [x] `sudo ./production-control.sh status` → todo RUNNING
-- [x] Hacer petición de prueba
-- [x] `sudo ./production-control.sh logs` → ver que procesa
+# Ver rutas disponibles
+php artisan route:list --path=api
+
+# Crear migration
+php artisan make:migration create_transactions_table
+
+# Crear model + migration + factory + seeder
+php artisan make:model Transaction -mfs
+
+# Crear Form Request
+php artisan make:request StoreTransactionRequest
+
+# Crear Policy
+php artisan make:policy TransactionPolicy --model=Transaction
+
+# Crear Observer
+php artisan make:observer TransactionObserver --model=Transaction
+
+# Crear Event
+php artisan make:event ExpenseCreated
+
+# Crear Listener
+php artisan make:listener CheckBudgetExceeded --event=ExpenseCreated
+
+# Crear Job
+php artisan make:job GenerateFinancialReport
+```
 
 ---
 
-¡Listo! Todo configurado para funcionar con comandos simples. 🎉
+## Variables de entorno importantes
+
+```env
+APP_NAME="Finanzas App"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=mysql
+DB_DATABASE=finanzas
+
+# Para WebSockets (Reverb)
+BROADCAST_CONNECTION=reverb
+REVERB_HOST=localhost
+REVERB_PORT=6001
+
+# Para colas
+QUEUE_CONNECTION=database
+```

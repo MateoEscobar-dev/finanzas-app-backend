@@ -5,7 +5,7 @@
 ### Paso 1: Verificar que todo esté instalado (30 segundos)
 
 ```bash
-cd /var/www/html/panel_admin/back_api_panel_admin
+cd /var/www/html/finanzas/finanzas-app-backend
 
 # Verificar archivos existen
 ls -la app/Http/Controllers/Api/UserController.php
@@ -46,7 +46,7 @@ DELETE     api/user/{user} ................... api.user.destroy › UserControll
 
 ```bash
 # Login
-curl -X POST "http://paneladmin.local/api/login" \
+curl -X POST "http://finanzas.local/api/login" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@example.com",
@@ -72,7 +72,7 @@ Respuesta esperada:
 
 ```bash
 # Reemplaza YOUR_TOKEN con el token obtenido arriba
-curl -X GET "http://paneladmin.local/api/user?take=10&skip=0" \
+curl -X GET "http://finanzas.local/api/user?take=10&skip=0" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json"
 ```
@@ -89,7 +89,7 @@ curl -X GET "http://paneladmin.local/api/user?take=10&skip=0" \
 2. Nombre: `API Usuarios`
 3. Agregar variables:
    ```
-   base_url: http://paneladmin.local
+   base_url: http://finanzas.local
    token: (dejá vacío, se llenará después)
    ```
 4. Click "Save"
@@ -268,13 +268,13 @@ Después del quick start, prueba:
 
 1. ✅ **Obtener usuario específico**
    ```bash
-   curl -X GET "http://paneladmin.local/api/user/1" \
+   curl -X GET "http://finanzas.local/api/user/1" \
      -H "Authorization: Bearer YOUR_TOKEN"
    ```
 
 2. ✅ **Actualizar usuario**
    ```bash
-   curl -X PUT "http://paneladmin.local/api/user/1" \
+   curl -X PUT "http://finanzas.local/api/user/1" \
      -H "Authorization: Bearer YOUR_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{"name": "Updated Name"}'
@@ -282,13 +282,13 @@ Después del quick start, prueba:
 
 3. ✅ **Buscar usuarios**
    ```bash
-   curl -X GET "http://paneladmin.local/api/user?search=john" \
+   curl -X GET "http://finanzas.local/api/user?search=john" \
      -H "Authorization: Bearer YOUR_TOKEN"
    ```
 
 4. ✅ **Cambiar rol de usuario**
    ```bash
-   curl -X PUT "http://paneladmin.local/api/user/1" \
+   curl -X PUT "http://finanzas.local/api/user/1" \
      -H "Authorization: Bearer YOUR_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{"id_rol": 3}'
@@ -296,7 +296,7 @@ Después del quick start, prueba:
 
 5. ✅ **Eliminar usuario** (cuidado!)
    ```bash
-   curl -X DELETE "http://paneladmin.local/api/user/10" \
+   curl -X DELETE "http://finanzas.local/api/user/10" \
      -H "Authorization: Bearer YOUR_TOKEN"
    ```
 

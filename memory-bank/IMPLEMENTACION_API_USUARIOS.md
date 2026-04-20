@@ -196,13 +196,13 @@ Busca en:
 
 ### Listar usuarios
 ```bash
-curl -X GET "http://paneladmin.local/api/user?take=10&skip=0" \
+curl -X GET "http://finanzas.local/api/user?take=10&skip=0" \
   -H "Authorization: Bearer TOKEN"
 ```
 
 ### Crear usuario
 ```bash
-curl -X POST "http://paneladmin.local/api/user" \
+curl -X POST "http://finanzas.local/api/user" \
   -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -217,7 +217,7 @@ curl -X POST "http://paneladmin.local/api/user" \
 
 ### Actualizar usuario
 ```bash
-curl -X PUT "http://paneladmin.local/api/user/1" \
+curl -X PUT "http://finanzas.local/api/user/1" \
   -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -229,7 +229,7 @@ curl -X PUT "http://paneladmin.local/api/user/1" \
 
 ### Eliminar usuario
 ```bash
-curl -X DELETE "http://paneladmin.local/api/user/1" \
+curl -X DELETE "http://finanzas.local/api/user/1" \
   -H "Authorization: Bearer TOKEN"
 ```
 
