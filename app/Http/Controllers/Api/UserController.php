@@ -18,8 +18,57 @@ class UserController extends Controller
     use ApiResponse, LogTrait;
 
     /**
-     * Display a paginated list of users.
-     * GET /api/user?take=10&skip=0
+     * Listar usuarios
+     *
+     * Retorna una lista paginada de usuarios del sistema.
+     * Soporta búsqueda por nombre, email o documento.
+     *
+     * @group Usuarios
+     *
+     * @queryParam take integer Número de registros a retornar (1-100). Por defecto: 10. Example: 10
+     * @queryParam skip integer Número de registros a saltar (offset). Por defecto: 0. Example: 0
+     * @queryParam search string Término de búsqueda (nombre, email o documento). Example: Juan
+     *
+     * @response 200 scenario="Lista de usuarios" {
+     *   "success": true,
+     *   "message": "Usuarios obtenidos exitosamente",
+     *   "data": {
+     *     "records": [
+     *       {
+     *         "id": 1,
+     *         "name": "Juan Pérez",
+     *         "email": "usuario@ejemplo.com",
+     *         "document": "****",
+     *         "first_name": "Juan",
+     *         "second_name": null,
+     *         "first_last_name": "Pérez",
+     *         "second_last_name": null,
+     *         "address": "****",
+     *         "phone": "****",
+     *         "phone_ext": null,
+     *         "birth_day": "1990-05-15",
+     *         "lang": "es",
+     *         "active": 1,
+     *         "imagen": null,
+     *         "email_verified_at": null,
+     *         "created_at": "2025-01-01T00:00:00.000000Z",
+     *         "updated_at": "2025-01-01T00:00:00.000000Z",
+     *         "roles": ["User"],
+     *         "permissions": ["ver-usuarios"]
+     *       }
+     *     ],
+     *     "pagination": {
+     *       "total": 50,
+     *       "take": 10,
+     *       "skip": 0,
+     *       "pages": 5,
+     *       "current_page": 1
+     *     }
+     *   }
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function index(Request $request)
     {
@@ -96,8 +145,63 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created user in storage.
-     * POST /api/user
+     * Crear usuario
+     *
+     * Crea un nuevo usuario en el sistema y le asigna un rol con sus permisos correspondientes.
+     * El campo `password` debe enviarse encriptado en AES-256-CBC.
+     *
+     * @group Usuarios
+     *
+     * @bodyParam document string required Documento de identidad (único, máx. 20 caracteres). Example: 12345678
+     * @bodyParam first_name string required Primer nombre (máx. 100 caracteres). Example: Juan
+     * @bodyParam second_name string Segundo nombre (opcional). Example: Carlos
+     * @bodyParam first_last_name string required Primer apellido (máx. 100 caracteres). Example: Pérez
+     * @bodyParam second_last_name string Segundo apellido (opcional). Example: Gómez
+     * @bodyParam email string required Correo electrónico válido y único. Example: nuevo@ejemplo.com
+     * @bodyParam password string required Contraseña encriptada AES-256-CBC. Example: U2FsdGVkX1+xyz...
+     * @bodyParam phone string required Teléfono en formato E.164. Example: +573001234567
+     * @bodyParam phone_ext numeric Extensión telefónica (opcional). Example: 101
+     * @bodyParam birth_day string required Fecha de nacimiento YYYY-MM-DD. Debe ser mayor de 18 años. Example: 1990-05-15
+     * @bodyParam address string Dirección (opcional). Example: Calle 123 # 45-67
+     * @bodyParam lang string Idioma preferido del usuario (es|en). Por defecto: es. Example: es
+     * @bodyParam id_rol integer required ID del rol a asignar (ver GET /api/roles). Example: 1
+     *
+     * @response 201 scenario="Usuario creado" {
+     *   "success": true,
+     *   "message": "Usuario creado exitosamente",
+     *   "data": {
+     *     "id": 10,
+     *     "name": "Juan Pérez",
+     *     "email": "nuevo@ejemplo.com",
+     *     "document": "****",
+     *     "first_name": "Juan",
+     *     "second_name": "Carlos",
+     *     "first_last_name": "Pérez",
+     *     "second_last_name": "Gómez",
+     *     "address": "****",
+     *     "phone": "****",
+     *     "phone_ext": 101,
+     *     "birth_day": "1990-05-15",
+     *     "lang": "es",
+     *     "active": 1,
+     *     "imagen": null,
+     *     "roles": ["User"],
+     *     "permissions": ["ver-usuarios"]
+     *   }
+     * }
+     * @response 422 scenario="Rol no encontrado" {
+     *   "success": false,
+     *   "message": "El rol especificado no existe",
+     *   "errors": ""
+     * }
+     * @response 422 scenario="Validación fallida" {
+     *   "success": false,
+     *   "message": "Los datos proporcionados no son válidos",
+     *   "errors": { "email": ["El correo electrónico ya está registrado."] }
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function store(StoreUserRequest $request)
     {
@@ -142,8 +246,48 @@ class UserController extends Controller
     }
 
     /**
-     * Display the specified user.
-     * GET /api/user/{id}
+     * Obtener usuario
+     *
+     * Retorna los datos completos de un usuario específico, incluyendo roles y permisos.
+     *
+     * @group Usuarios
+     *
+     * @urlParam id integer required ID del usuario. Example: 1
+     *
+     * @response 200 scenario="Usuario encontrado" {
+     *   "success": true,
+     *   "message": "Usuario obtenido exitosamente",
+     *   "data": {
+     *     "id": 1,
+     *     "name": "Juan Pérez",
+     *     "email": "usuario@ejemplo.com",
+     *     "document": "****",
+     *     "first_name": "Juan",
+     *     "second_name": null,
+     *     "first_last_name": "Pérez",
+     *     "second_last_name": null,
+     *     "address": "****",
+     *     "phone": "****",
+     *     "phone_ext": null,
+     *     "birth_day": "1990-05-15",
+     *     "lang": "es",
+     *     "active": 1,
+     *     "imagen": null,
+     *     "email_verified_at": null,
+     *     "created_at": "2025-01-01T00:00:00.000000Z",
+     *     "updated_at": "2025-01-01T00:00:00.000000Z",
+     *     "roles": ["User"],
+     *     "permissions": ["ver-usuarios"]
+     *   }
+     * }
+     * @response 404 scenario="Usuario no encontrado" {
+     *   "success": false,
+     *   "message": "El usuario no fue encontrado",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function show($id)
     {
@@ -163,8 +307,53 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified user in storage.
-     * PUT /api/user/{id}
+     * Actualizar usuario
+     *
+     * Actualiza los datos de un usuario existente. Solo se procesan los campos enviados.
+     * Si se envía `id_rol`, se sincroniza el rol y sus permisos.
+     * No se actualiza la contraseña si se envía vacía.
+     *
+     * @group Usuarios
+     *
+     * @urlParam id integer required ID del usuario a actualizar. Example: 1
+     *
+     * @bodyParam document string Documento de identidad (único). Example: 12345678
+     * @bodyParam first_name string Primer nombre. Example: Juan
+     * @bodyParam second_name string Segundo nombre (opcional). Example: Carlos
+     * @bodyParam first_last_name string Primer apellido. Example: Pérez
+     * @bodyParam second_last_name string Segundo apellido (opcional). Example: Gómez
+     * @bodyParam email string Correo electrónico válido y único. Example: actualizado@ejemplo.com
+     * @bodyParam phone string Teléfono en formato E.164. Example: +573001234567
+     * @bodyParam phone_ext numeric Extensión telefónica (opcional). Example: 101
+     * @bodyParam birth_day string Fecha de nacimiento YYYY-MM-DD. Example: 1990-05-15
+     * @bodyParam address string Dirección (opcional). Example: Calle 123 # 45-67
+     * @bodyParam lang string Idioma preferido (es|en). Example: es
+     * @bodyParam id_rol integer ID del nuevo rol a asignar. Example: 2
+     *
+     * @response 200 scenario="Usuario actualizado" {
+     *   "success": true,
+     *   "message": "Usuario actualizado exitosamente",
+     *   "data": {
+     *     "id": 1,
+     *     "name": "Juan Pérez",
+     *     "email": "actualizado@ejemplo.com",
+     *     "roles": ["Admin"],
+     *     "permissions": ["ver-usuarios", "crear-usuarios"]
+     *   }
+     * }
+     * @response 404 scenario="Usuario no encontrado" {
+     *   "success": false,
+     *   "message": "El usuario no fue encontrado",
+     *   "errors": ""
+     * }
+     * @response 422 scenario="Rol no encontrado" {
+     *   "success": false,
+     *   "message": "El rol especificado no existe",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function update(UpdateUserRequest $request, $id)
     {
@@ -228,8 +417,33 @@ class UserController extends Controller
     }
 
     /**
-     * Remove the specified user from storage.
-     * DELETE /api/user/{id}
+     * Eliminar usuario
+     *
+     * Elimina permanentemente un usuario del sistema junto con sus roles,
+     * permisos y tokens de sesión. No se puede eliminar al usuario autenticado.
+     *
+     * @group Usuarios
+     *
+     * @urlParam id integer required ID del usuario a eliminar. Example: 5
+     *
+     * @response 200 scenario="Usuario eliminado" {
+     *   "success": true,
+     *   "message": "Usuario eliminado exitosamente",
+     *   "data": []
+     * }
+     * @response 403 scenario="Intento de eliminar cuenta propia" {
+     *   "success": false,
+     *   "message": "No puedes eliminar tu propia cuenta",
+     *   "errors": ""
+     * }
+     * @response 404 scenario="Usuario no encontrado" {
+     *   "success": false,
+     *   "message": "El usuario no fue encontrado",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function destroy(Request $request, $id)
     {
@@ -294,8 +508,27 @@ class UserController extends Controller
     }
 
     /**
-     * Activate the specified user.
-     * POST /api/user/{id}/activate
+     * Activar usuario
+     *
+     * Activa un usuario que se encontraba inactivo, permitiéndole iniciar sesión nuevamente.
+     *
+     * @group Usuarios
+     *
+     * @urlParam user integer required ID del usuario a activar. Example: 3
+     *
+     * @response 200 scenario="Usuario activado" {
+     *   "success": true,
+     *   "message": "Usuario activado exitosamente",
+     *   "data": []
+     * }
+     * @response 404 scenario="Usuario no encontrado" {
+     *   "success": false,
+     *   "message": "Registro no encontrado",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function activate(Request $request, $id)
     {
@@ -317,8 +550,27 @@ class UserController extends Controller
     }
 
     /**
-     * Deactivate the specified user.
-     * POST /api/user/{id}/deactivate
+     * Desactivar usuario
+     *
+     * Desactiva un usuario impidiéndole iniciar sesión. Los datos no se eliminan.
+     *
+     * @group Usuarios
+     *
+     * @urlParam user integer required ID del usuario a desactivar. Example: 3
+     *
+     * @response 200 scenario="Usuario desactivado" {
+     *   "success": true,
+     *   "message": "Usuario desactivado exitosamente",
+     *   "data": []
+     * }
+     * @response 404 scenario="Usuario no encontrado" {
+     *   "success": false,
+     *   "message": "Registro no encontrado",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function deactivate(Request $request, $id)
     {
@@ -340,8 +592,44 @@ class UserController extends Controller
     }
 
     /**
-     * Get user activity history.
-     * GET /api/user/{id}/history
+     * Historial de actividad del usuario
+     *
+     * Retorna el historial de cambios y actividad registrada del usuario especificado.
+     * Incluye todos los eventos auditados (creación, modificación, etc.).
+     *
+     * @group Usuarios
+     *
+     * @urlParam user integer required ID del usuario. Example: 1
+     *
+     * @response 200 scenario="Historial obtenido" {
+     *   "success": true,
+     *   "message": "Historial obtenido exitosamente",
+     *   "data": {
+     *     "user": {
+     *       "id": 1,
+     *       "name": "Juan Pérez",
+     *       "email": "usuario@ejemplo.com"
+     *     },
+     *     "logs": [
+     *       {
+     *         "id": 10,
+     *         "table": "users",
+     *         "type": "UPDATE OF THE REGISTRY",
+     *         "id_item": 1,
+     *         "reason": "User information updated",
+     *         "created_at": "2025-03-01T12:00:00.000000Z"
+     *       }
+     *     ]
+     *   }
+     * }
+     * @response 404 scenario="Usuario no encontrado" {
+     *   "success": false,
+     *   "message": "El usuario no fue encontrado",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function history(Request $request, $id)
     {
@@ -360,8 +648,31 @@ class UserController extends Controller
         }
     }
     /**
-     * Get user language preference.
-     * GET /api/user/{id}/language
+     * Actualizar idioma del usuario
+     *
+     * Actualiza la preferencia de idioma del usuario especificado.
+     *
+     * @group Usuarios
+     *
+     * @urlParam user integer required ID del usuario. Example: 1
+     *
+     * @bodyParam lang string required Código de idioma (es|en). Example: en
+     *
+     * @response 200 scenario="Idioma actualizado" {
+     *   "success": true,
+     *   "message": "Idioma actualizado exitosamente",
+     *   "data": {
+     *     "lang": "en"
+     *   }
+     * }
+     * @response 404 scenario="Usuario no encontrado" {
+     *   "success": false,
+     *   "message": "El usuario no fue encontrado",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function language(Request $request, $id)
     {

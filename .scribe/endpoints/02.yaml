@@ -1,0 +1,1019 @@
+name: Menú
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/menu/hierarchical
+    metadata:
+      custom: []
+      groupName: Menú
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Menú jerárquico'
+      description: |-
+        Retorna todos los menús en estructura jerárquica (padre-hijo) visibles.
+        Útil para construir la navegación de la aplicación.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Menú jerárquico obtenido exitosamente",
+            "data": [
+              {
+                "id": 1,
+                "key": "dashboard",
+                "label": "Dashboard",
+                "icon": "bx-home",
+                "link": "/dashboard",
+                "is_title": false,
+                "order": 1,
+                "flag_visible": true,
+                "children": []
+              },
+              {
+                "id": 2,
+                "key": "admin",
+                "label": "Administración",
+                "icon": "bx-cog",
+                "link": null,
+                "is_title": true,
+                "order": 2,
+                "flag_visible": true,
+                "children": [
+                  {
+                    "id": 3,
+                    "key": "usuarios",
+                    "label": "Usuarios",
+                    "icon": "bx-user",
+                    "link": "/admin/usuarios",
+                    "is_title": false,
+                    "order": 1,
+                    "flag_visible": true,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        headers: []
+        description: 'Menú jerárquico'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/menu/by-system/{idSistema}'
+    metadata:
+      custom: []
+      groupName: Menú
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Menús por sistema'
+      description: |-
+        Retorna todos los menús jerárquicos que pertenecen a un sistema específico.
+        Útil para construir la navegación de un módulo específico.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      idSistema:
+        custom: []
+        name: idSistema
+        description: 'ID del sistema.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      idSistema: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Menús del sistema obtenidos exitosamente",
+            "data": [
+              {
+                "id": 1,
+                "key": "dashboard",
+                "label": "Dashboard",
+                "icon": "bx-home",
+                "link": "/dashboard",
+                "is_title": false,
+                "order": 1,
+                "id_sistema": 1,
+                "children": []
+              }
+            ]
+          }
+        headers: []
+        description: 'Menús del sistema'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/menu
+    metadata:
+      custom: []
+      groupName: Menú
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Listar menús'
+      description: |-
+        Retorna todos los menús visibles paginados, ordenados por el campo `order`.
+        Incluye items de todos los niveles jerárquicos en lista plana.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Menús obtenidos exitosamente",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": 1,
+                  "key": "dashboard",
+                  "label": "Dashboard",
+                  "icon": "bx-home",
+                  "link": "/dashboard",
+                  "parent_key": null,
+                  "is_title": false,
+                  "collapsed": false,
+                  "order": 1,
+                  "flag_visible": true,
+                  "id_sistema": 1
+                }
+              ],
+              "per_page": 15,
+              "total": 20
+            }
+          }
+        headers: []
+        description: 'Lista de menús'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/menu
+    metadata:
+      custom: []
+      groupName: Menú
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Crear menú'
+      description: |-
+        Crea un nuevo ítem de menú. Si se especifica `parent_key`, el menú
+        se anida como hijo del padre indicado.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      key:
+        custom: []
+        name: key
+        description: 'Identificador único del menú.'
+        required: true
+        example: reportes
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      label:
+        custom: []
+        name: label
+        description: 'Etiqueta visible del menú.'
+        required: true
+        example: Reportes
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      icon:
+        custom: []
+        name: icon
+        description: 'Ícono del menú (clase CSS).'
+        required: false
+        example: bx-bar-chart
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      link:
+        custom: []
+        name: link
+        description: 'URL o ruta del menú.'
+        required: false
+        example: /reportes
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      parent_key:
+        custom: []
+        name: parent_key
+        description: 'Clave del menú padre (para anidamiento).'
+        required: false
+        example: admin
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      is_title:
+        custom: []
+        name: is_title
+        description: 'Indica si es un título de sección.'
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      collapsed:
+        custom: []
+        name: collapsed
+        description: 'Indica si el menú comienza colapsado.'
+        required: false
+        example: true
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      id_sistema_pantalla:
+        custom: []
+        name: id_sistema_pantalla
+        description: 'ID de la pantalla del sistema.'
+        required: false
+        example: 5
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      order:
+        custom: []
+        name: order
+        description: 'Orden de aparición.'
+        required: false
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      padre_id:
+        custom: []
+        name: padre_id
+        description: 'ID del padre en sistema legado.'
+        required: false
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      icon_id:
+        custom: []
+        name: icon_id
+        description: 'ID del ícono en catálogo.'
+        required: false
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      flag_detalle:
+        custom: []
+        name: flag_detalle
+        description: 'Indica si tiene vista de detalle.'
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      flag_visible:
+        custom: []
+        name: flag_visible
+        description: 'Indica si el menú es visible. Por defecto: true.'
+        required: false
+        example: true
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      id_sistema:
+        custom: []
+        name: id_sistema
+        description: 'ID del sistema al que pertenece.'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      bt_login:
+        custom: []
+        name: bt_login
+        description: 'Usuario que crea el registro.'
+        required: false
+        example: admin
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      key: reportes
+      label: Reportes
+      icon: bx-bar-chart
+      link: /reportes
+      parent_key: admin
+      is_title: false
+      collapsed: true
+      id_sistema_pantalla: 5
+      order: 3
+      padre_id: 0
+      icon_id: 12
+      flag_detalle: false
+      flag_visible: true
+      id_sistema: 1
+      bt_login: admin
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: |-
+          {
+            "success": true,
+            "message": "Menú creado exitosamente",
+            "data": {
+              "id": 10,
+              "key": "reportes",
+              "label": "Reportes",
+              "icon": "bx-bar-chart",
+              "link": "/reportes",
+              "is_title": false,
+              "collapsed": true,
+              "order": 3,
+              "flag_visible": true,
+              "children": []
+            }
+          }
+        headers: []
+        description: 'Menú creado'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+      -
+        custom: []
+        status: 404
+        content: |-
+          {
+            "success": false,
+            "message": "El menú padre no fue encontrado",
+            "errors": []
+          }
+        headers: []
+        description: 'Padre no encontrado'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "Los datos proporcionados no son válidos",
+            "errors": { "key": ["El campo key ya existe."] }
+          }
+        headers: []
+        description: 'Validación fallida'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/menu/{id}'
+    metadata:
+      custom: []
+      groupName: Menú
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Obtener menú'
+      description: |-
+        Retorna los datos de un menú específico en estructura jerárquica,
+        incluyendo sus submenús anidados.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the menu.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      menu:
+        custom: []
+        name: menu
+        description: 'ID del menú.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+      menu: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Menú obtenido exitosamente",
+            "data": {
+              "id": 1,
+              "key": "admin",
+              "label": "Administración",
+              "icon": "bx-cog",
+              "link": null,
+              "is_title": true,
+              "collapsed": false,
+              "order": 2,
+              "flag_visible": true,
+              "children": [
+                { "id": 3, "key": "usuarios", "label": "Usuarios", "children": [] }
+              ]
+            }
+          }
+        headers: []
+        description: 'Menú encontrado'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+      -
+        custom: []
+        status: 404
+        content: |-
+          {
+            "message": "No query results for model [App\\Models\\Menu]."
+          }
+        headers: []
+        description: 'Menú no encontrado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/menu/{id}'
+    metadata:
+      custom: []
+      groupName: Menú
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Actualizar menú'
+      description: |-
+        Actualiza los datos de un menú existente. Si se cambia `parent_key`,
+        se actualiza el anidamiento jerárquico.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the menu.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      menu:
+        custom: []
+        name: menu
+        description: 'ID del menú a actualizar.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+      menu: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      key:
+        custom: []
+        name: key
+        description: 'Identificador único del menú.'
+        required: false
+        example: reportes-v2
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      label:
+        custom: []
+        name: label
+        description: 'Etiqueta visible del menú.'
+        required: false
+        example: 'Reportes Avanzados'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      icon:
+        custom: []
+        name: icon
+        description: 'Ícono del menú.'
+        required: false
+        example: bx-bar-chart-alt
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      link:
+        custom: []
+        name: link
+        description: 'URL o ruta del menú.'
+        required: false
+        example: /reportes/avanzados
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      parent_key:
+        custom: []
+        name: parent_key
+        description: 'Clave del nuevo padre (para cambiar jerarquía).'
+        required: false
+        example: admin
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      is_title:
+        custom: []
+        name: is_title
+        description: 'Indica si es título de sección.'
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      collapsed:
+        custom: []
+        name: collapsed
+        description: 'Indica si comienza colapsado.'
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      id_sistema_pantalla:
+        custom: []
+        name: id_sistema_pantalla
+        description: ''
+        required: false
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      order:
+        custom: []
+        name: order
+        description: 'Orden de aparición.'
+        required: false
+        example: 5
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      padre_id:
+        custom: []
+        name: padre_id
+        description: ''
+        required: false
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      icon_id:
+        custom: []
+        name: icon_id
+        description: ''
+        required: false
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      flag_detalle:
+        custom: []
+        name: flag_detalle
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      flag_visible:
+        custom: []
+        name: flag_visible
+        description: 'Visibilidad del menú.'
+        required: false
+        example: true
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      id_sistema:
+        custom: []
+        name: id_sistema
+        description: 'ID del sistema al que pertenece.'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      bt_login:
+        custom: []
+        name: bt_login
+        description: validation.max.
+        required: false
+        example: 'n'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      key: reportes-v2
+      label: 'Reportes Avanzados'
+      icon: bx-bar-chart-alt
+      link: /reportes/avanzados
+      parent_key: admin
+      is_title: false
+      collapsed: false
+      id_sistema_pantalla: 16
+      order: 5
+      padre_id: 16
+      icon_id: 16
+      flag_detalle: false
+      flag_visible: true
+      id_sistema: 1
+      bt_login: 'n'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Menú actualizado exitosamente",
+            "data": {
+              "id": 1,
+              "key": "reportes-v2",
+              "label": "Reportes Avanzados",
+              "icon": "bx-bar-chart-alt",
+              "link": "/reportes/avanzados",
+              "order": 5,
+              "flag_visible": true,
+              "children": []
+            }
+          }
+        headers: []
+        description: 'Menú actualizado'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+      -
+        custom: []
+        status: 404
+        content: |-
+          {
+            "success": false,
+            "message": "El menú padre no fue encontrado",
+            "errors": []
+          }
+        headers: []
+        description: 'Padre no encontrado'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "Los datos proporcionados no son válidos",
+            "errors": { "key": ["El campo key ya existe."] }
+          }
+        headers: []
+        description: 'Validación fallida'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/menu/{id}'
+    metadata:
+      custom: []
+      groupName: Menú
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Eliminar menú'
+      description: |-
+        Elimina un menú del sistema. No se puede eliminar si tiene submenús asociados.
+        Primero elimine o reasigne los submenús hijos.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the menu.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      menu:
+        custom: []
+        name: menu
+        description: 'ID del menú a eliminar.'
+        required: true
+        example: 10
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+      menu: 10
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Menú eliminado exitosamente",
+            "data": null
+          }
+        headers: []
+        description: 'Menú eliminado'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+      -
+        custom: []
+        status: 404
+        content: |-
+          {
+            "message": "No query results for model [App\\Models\\Menu]."
+          }
+        headers: []
+        description: 'Menú no encontrado'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "No se puede eliminar el menú porque tiene submenús asociados",
+            "errors": []
+          }
+        headers: []
+        description: 'Tiene submenús'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

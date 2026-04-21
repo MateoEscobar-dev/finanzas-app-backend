@@ -14,8 +14,51 @@ class RoleController extends Controller
     use ApiResponse, LogTrait;
 
     /**
-     * Display a paginated list of roles.
-     * GET /api/roles?take=10&skip=0
+     * Listar roles
+     *
+     * Retorna una lista paginada de roles del sistema con sus permisos asociados.
+     * Soporta búsqueda por nombre de rol.
+     *
+     * @group Roles y Permisos
+     *
+     * @queryParam take integer Número de registros a retornar (1-100). Por defecto: 10. Example: 10
+     * @queryParam skip integer Número de registros a saltar (offset). Por defecto: 0. Example: 0
+     * @queryParam search string Término de búsqueda por nombre del rol. Example: Admin
+     *
+     * @response 200 scenario="Lista de roles" {
+     *   "success": true,
+     *   "message": "Roles obtenidos exitosamente",
+     *   "data": {
+     *     "records": [
+     *       {
+     *         "id": 1,
+     *         "name": "Admin",
+     *         "guard_name": "api",
+     *         "created_at": "2025-01-01T00:00:00.000000Z",
+     *         "updated_at": "2025-01-01T00:00:00.000000Z",
+     *         "permissions": ["ver-usuarios", "crear-usuarios", "editar-usuarios"],
+     *         "permissions_count": 3
+     *       },
+     *       {
+     *         "id": 2,
+     *         "name": "User",
+     *         "guard_name": "api",
+     *         "permissions": ["ver-usuarios"],
+     *         "permissions_count": 1
+     *       }
+     *     ],
+     *     "pagination": {
+     *       "total": 5,
+     *       "take": 10,
+     *       "skip": 0,
+     *       "pages": 1,
+     *       "current_page": 1
+     *     }
+     *   }
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function index(Request $request)
     {
@@ -75,8 +118,35 @@ class RoleController extends Controller
     }
 
     /**
-     * Display the specified role with its permissions.
-     * GET /api/roles/{id}
+     * Obtener rol
+     *
+     * Retorna los datos de un rol específico con todos sus permisos asignados.
+     *
+     * @group Roles y Permisos
+     *
+     * @urlParam id integer required ID del rol. Example: 1
+     *
+     * @response 200 scenario="Rol encontrado" {
+     *   "success": true,
+     *   "message": "Rol obtenido exitosamente",
+     *   "data": {
+     *     "id": 1,
+     *     "name": "Admin",
+     *     "guard_name": "api",
+     *     "created_at": "2025-01-01T00:00:00.000000Z",
+     *     "updated_at": "2025-01-01T00:00:00.000000Z",
+     *     "permissions": ["ver-usuarios", "crear-usuarios", "editar-usuarios", "eliminar-usuarios"],
+     *     "permissions_count": 4
+     *   }
+     * }
+     * @response 404 scenario="Rol no encontrado" {
+     *   "success": false,
+     *   "message": "El rol no fue encontrado",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function show($id)
     {
@@ -104,8 +174,30 @@ class RoleController extends Controller
     }
 
     /**
-     * Get all available permissions.
-     * GET /api/roles/permissions/list
+     * Listar permisos
+     *
+     * Retorna todos los permisos disponibles en el sistema.
+     * Útil para asignar permisos al crear o actualizar roles.
+     *
+     * @group Roles y Permisos
+     *
+     * @response 200 scenario="Lista de permisos" {
+     *   "success": true,
+     *   "message": "Permisos obtenidos exitosamente",
+     *   "data": {
+     *     "permissions": [
+     *       { "id": 1, "name": "ver-usuarios", "guard_name": "api" },
+     *       { "id": 2, "name": "crear-usuarios", "guard_name": "api" },
+     *       { "id": 3, "name": "editar-usuarios", "guard_name": "api" },
+     *       { "id": 4, "name": "eliminar-usuarios", "guard_name": "api" },
+     *       { "id": 5, "name": "ver-roles", "guard_name": "api" }
+     *     ],
+     *     "count": 5
+     *   }
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function permissions(Request $request)
     {
