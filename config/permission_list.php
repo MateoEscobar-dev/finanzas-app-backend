@@ -1,12 +1,12 @@
 <?php
 
-$permissions = ["add", "edit", "destroy", "activate", "historial"];
+$permissions = ["view", "add", "edit", "destroy", "activate", "historial"];
 
 return [
     [
         'section' => 'permissions',
         'roles' => ["Administrator"],
-        'permissions' => [],
+        'permissions' => ["view"],
         'level' => 1,
         'parent' => '',
         'extra_permissions' => []

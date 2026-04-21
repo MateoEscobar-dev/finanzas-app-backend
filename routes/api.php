@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\TwoFactorController;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Fallback de autenticación
@@ -32,23 +33,32 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/2fa/verify', [TwoFactorController::class, 'verify']);
     });
 
-    // Menú rutas
+    // Menú
     Route::get('/menu/hierarchical', [MenuController::class, 'hierarchical']);
     Route::get('/menu/by-system/{idSistema}', [MenuController::class, 'bySystem']);
     Route::apiResource('menu', MenuController::class);
 
-    // Rutas de roles
-    Route::get('/roles', [RoleController::class, 'index']);
-    Route::get('/roles/{id}', [RoleController::class, 'show']);
-    Route::get('/permissions', [RoleController::class, 'permissions']);
-
-    // Rutas de usuarios
-    Route::apiResource('user', UserController::class);
-    Route::group(['prefix' => 'user'], function () {
-        Route::post('{user}/activate', [UserController::class, 'activate']);
-        Route::post('{user}/deactivate', [UserController::class, 'deactivate']);
-        Route::get('{user}/history', [UserController::class, 'history']);
-        Route::post('{user}/language', [UserController::class, 'language']);
+    // Usuarios — CRUD + rutas adicionales
+    Route::apiResource('users', UserController::class);
+    Route::prefix('users')->group(function () {
+        Route::post('{id}/activate',    [UserController::class, 'activate']);
+        Route::post('{id}/deactivate',  [UserController::class, 'deactivate']);
+        Route::get('{id}/history',      [UserController::class, 'history']);
+        Route::post('{id}/language',    [UserController::class, 'language']);
+        Route::get('{id}/permissions',  [UserController::class, 'getUserPermissions']);
+        Route::post('{id}/permissions', [UserController::class, 'syncUserPermissions']);
+        Route::post('{id}/roles',       [UserController::class, 'assignRoles']);
     });
-});
 
+    // Roles — CRUD + rutas adicionales
+    Route::apiResource('roles', RoleController::class);
+    Route::prefix('roles')->group(function () {
+        Route::post('{id}/activate',    [RoleController::class, 'activate']);
+        Route::post('{id}/deactivate',  [RoleController::class, 'deactivate']);
+        Route::post('{id}/permissions', [RoleController::class, 'syncPermissions']);
+    });
+
+    // Permisos — solo lectura
+    Route::get('/permissions',      [PermissionController::class, 'index']);
+    Route::get('/permissions/{id}', [PermissionController::class, 'show']);
+});

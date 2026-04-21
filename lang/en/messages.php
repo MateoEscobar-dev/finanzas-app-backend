@@ -27,6 +27,7 @@ return [
         'error_retry'       => 'There was an error, please try again.',
         'validation_failed' => 'The given data was invalid.',
         'record_not_found'  => 'Record not found.',
+        'forbidden'         => 'You do not have permission to perform this action.',
     ],
 
     'user' => [
@@ -45,13 +46,29 @@ return [
         'deactivated'           => 'User deactivated successfully.',
         'history_success'       => 'User history retrieved successfully.',
         'language_updated'      => 'User language updated successfully.',
+        'permissions_success'   => 'User permissions retrieved successfully.',
+        'permissions_synced'    => 'Permissions synced successfully.',
+        'roles_synced'          => 'Roles synced successfully.',
     ],
 
     'role' => [
         'list_success'        => 'Roles retrieved successfully.',
         'show_success'        => 'Role retrieved successfully.',
         'not_found'           => 'Role not found.',
+        'created'             => 'Role created successfully.',
+        'updated'             => 'Role updated successfully.',
+        'deleted'             => 'Role deleted successfully.',
+        'activated'           => 'Role activated successfully.',
+        'deactivated'         => 'Role deactivated successfully.',
         'permissions_success' => 'Permissions retrieved successfully.',
+        'permissions_synced'  => 'Role permissions synced successfully.',
+        'has_users'           => 'The role has assigned users and cannot be deleted.',
+    ],
+
+    'permission' => [
+        'list_success' => 'Permissions retrieved successfully.',
+        'show_success' => 'Permission retrieved successfully.',
+        'not_found'    => 'Permission not found.',
     ],
 
     'menu' => [
