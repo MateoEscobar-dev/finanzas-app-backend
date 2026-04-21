@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Traits\ApiResponse;
 use App\Traits\LogTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Lang;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -67,11 +66,11 @@ class RoleController extends Controller
                     'pages' => ceil($total / $take),
                     'current_page' => floor($skip / $take) + 1,
                 ],
-            ], Lang::get('Roles retrieved successfully'), 200);
+            ], __('messages.role.list_success'), 200);
 
         } catch (\Throwable $th) {
             $this->createLog("roles", "Error retrieving roles", 0, $th);
-            return $this->errorResponse(Lang::get('There was an error, try again'), "", 500);
+            return $this->errorResponse(__('messages.general.error_retry'), "", 500);
         }
     }
 
@@ -94,13 +93,13 @@ class RoleController extends Controller
                 'permissions_count' => $role->permissions->count(),
             ];
 
-            return $this->successResponse($response, Lang::get('Role retrieved successfully'), 200);
+            return $this->successResponse($response, __('messages.role.show_success'), 200);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return $this->errorResponse(Lang::get('Role not found'), "", 404);
+            return $this->errorResponse(__('messages.role.not_found'), "", 404);
         } catch (\Throwable $th) {
             $this->createLog("roles", "Error retrieving role", $id, $th);
-            return $this->errorResponse(Lang::get('There was an error, try again'), "", 500);
+            return $this->errorResponse(__('messages.general.error_retry'), "", 500);
         }
     }
 
@@ -116,11 +115,11 @@ class RoleController extends Controller
             return $this->successResponse([
                 'permissions' => $permissions,
                 'count' => $permissions->count(),
-            ], Lang::get('Permissions retrieved successfully'), 200);
+            ], __('messages.role.permissions_success'), 200);
 
         } catch (\Throwable $th) {
             $this->createLog("roles", "Error retrieving permissions", 0, $th);
-            return $this->errorResponse(Lang::get('There was an error, try again'), "", 500);
+            return $this->errorResponse(__('messages.general.error_retry'), "", 500);
         }
     }
 }

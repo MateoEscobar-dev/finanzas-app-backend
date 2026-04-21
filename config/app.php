@@ -15,6 +15,7 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
     'exc_key' => env('EXC_KEY', ''),
+    'aes_shared_key' => env('AES_SHARED_KEY', ''),
 
     /*
     |--------------------------------------------------------------------------

@@ -12,7 +12,6 @@ use App\Traits\LogTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Lang;
 
 class UserController extends Controller
 {
@@ -88,11 +87,11 @@ class UserController extends Controller
                     'pages' => ceil($total / $take),
                     'current_page' => floor($skip / $take) + 1,
                 ],
-            ], Lang::get('Users retrieved successfully'), 200);
+            ], __('messages.user.list_success'), 200);
 
         } catch (\Throwable $th) {
             $this->createLog("users", "Error retrieving users", 0, $th);
-            return $this->errorResponse(Lang::get('There was an error, try again'), "", 500);
+            return $this->errorResponse(__('messages.general.error_retry'), "", 500);
         }
     }
 
@@ -118,7 +117,7 @@ class UserController extends Controller
             if (!$role) {
                 $this->createLog("users", "CREATION OF THE REGISTRY - Role not found", $user->id, null, "Role ID: {$idRol}");
                 $user->delete();
-                return $this->errorResponse(Lang::get('The selected role does not exist'), "", 422);
+                return $this->errorResponse(__('messages.user.role_not_found'), "", 422);
             }
 
             // Asignar el rol al usuario
@@ -134,11 +133,11 @@ class UserController extends Controller
             // Preparar respuesta
             $response = $this->buildUserResponse($user);
 
-            return $this->successResponse($response, Lang::get('User created successfully'), 201);
+            return $this->successResponse($response, __('messages.user.created'), 201);
 
         } catch (\Throwable $th) {
             $this->createLog("users", "Error creating user", 0, $th);
-            return $this->errorResponse(Lang::get('There was an error creating the user'), "", 500);
+            return $this->errorResponse(__('messages.user.create_error'), "", 500);
         }
     }
 
@@ -153,13 +152,13 @@ class UserController extends Controller
 
             $response = $this->buildUserResponse($user);
 
-            return $this->successResponse($response, Lang::get('User retrieved successfully'), 200);
+            return $this->successResponse($response, __('messages.user.show_success'), 200);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return $this->errorResponse(Lang::get('User not found'), "", 404);
+            return $this->errorResponse(__('messages.user.not_found'), "", 404);
         } catch (\Throwable $th) {
             $this->createLog("users", "Error retrieving user", $id, $th);
-            return $this->errorResponse(Lang::get('There was an error, try again'), "", 500);
+            return $this->errorResponse(__('messages.general.error_retry'), "", 500);
         }
     }
 
@@ -196,7 +195,7 @@ class UserController extends Controller
                 $role = \Spatie\Permission\Models\Role::find($idRol);
 
                 if (!$role) {
-                    return $this->errorResponse(Lang::get('The selected role does not exist'), "", 422);
+                    return $this->errorResponse(__('messages.user.role_not_found'), "", 422);
                 }
 
                 // Sincronizar rol (elimina roles previos y asigna el nuevo)
@@ -218,13 +217,13 @@ class UserController extends Controller
             // Preparar respuesta
             $response = $this->buildUserResponse($user);
 
-            return $this->successResponse($response, Lang::get('User updated successfully'), 200);
+            return $this->successResponse($response, __('messages.user.updated'), 200);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return $this->errorResponse(Lang::get('User not found'), "", 404);
+            return $this->errorResponse(__('messages.user.not_found'), "", 404);
         } catch (\Throwable $th) {
             $this->createLog("users", "Error updating user", $id, $th);
-            return $this->errorResponse(Lang::get('There was an error updating the user'), "", 500);
+            return $this->errorResponse(__('messages.user.update_error'), "", 500);
         }
     }
 
@@ -239,7 +238,7 @@ class UserController extends Controller
 
             // No permitir eliminar al usuario autenticado
             if ($request->user() && $request->user()->id == $user->id) {
-                return $this->errorResponse(Lang::get('You cannot delete your own user'), "", 403);
+                return $this->errorResponse(__('messages.user.delete_own_forbidden'), "", 403);
             }
 
             // Registrar eliminación antes de eliminar
@@ -255,13 +254,13 @@ class UserController extends Controller
             // Eliminar usuario
             $user->delete();
 
-            return $this->successResponse([], Lang::get('User deleted successfully'), 200);
+            return $this->successResponse([], __('messages.user.deleted'), 200);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return $this->errorResponse(Lang::get('User not found'), "", 404);
+            return $this->errorResponse(__('messages.user.not_found'), "", 404);
         } catch (\Throwable $th) {
             $this->createLog("users", "Error deleting user", $id, $th);
-            return $this->errorResponse(Lang::get('There was an error deleting the user'), "", 500);
+            return $this->errorResponse(__('messages.user.delete_error'), "", 500);
         }
     }
 
@@ -303,17 +302,17 @@ class UserController extends Controller
         try {
             $row = User::where('id', $id)->first();
             if (!$row) {
-                return $this->errorResponse(Lang::get('Register not found'), "", 404);
+                return $this->errorResponse(__('messages.general.record_not_found'), "", 404);
             }
 
             $row->active = true;
             $row->save();
 
-            return $this->successResponse([], Lang::get('User activated successfully'), 200);
+            return $this->successResponse([], __('messages.user.activated'), 200);
 
         } catch (\Throwable $th) {
             $this->createLog("users", "Error activating user", $id, $th);
-            return $this->errorResponse(Lang::get('There was an error, try again'), "", 500);
+            return $this->errorResponse(__('messages.general.error_retry'), "", 500);
         }
     }
 
@@ -326,17 +325,17 @@ class UserController extends Controller
         try {
             $row = User::where('id', $id)->first();
             if (!$row) {
-                return $this->errorResponse(Lang::get('Register not found'), "", 404);
+                return $this->errorResponse(__('messages.general.record_not_found'), "", 404);
             }
 
             $row->active = false;
             $row->save();
 
-            return $this->successResponse([], Lang::get('User deactivated successfully'), 200);
+            return $this->successResponse([], __('messages.user.deactivated'), 200);
 
         } catch (\Throwable $th) {
             $this->createLog("users", "Error deactivating user", $id, $th);
-            return $this->errorResponse(Lang::get('There was an error, try again'), "", 500);
+            return $this->errorResponse(__('messages.general.error_retry'), "", 500);
         }
     }
 
@@ -353,11 +352,11 @@ class UserController extends Controller
                 return $this->successResponse([
                     'user' => $user,
                     'logs' => $logs,
-                ], Lang::get('User history retrieved successfully'), 200);
+                ], __('messages.user.history_success'), 200);
             }
         } catch (\Throwable $th) {
             $this->createLog("users", "Error retrieving user history", $id, $th);
-            return $this->errorResponse(Lang::get('There was an error, try again'), "", 500);
+            return $this->errorResponse(__('messages.general.error_retry'), "", 500);
         }
     }
     /**
@@ -371,12 +370,12 @@ class UserController extends Controller
             // actualizar lenguaje
             $user->lang = $request->input('lang');
             $user->save();
-            return $this->successResponse(['lang' => $user->lang], Lang::get('User language updated successfully'), 200);
+            return $this->successResponse(['lang' => $user->lang], __('messages.user.language_updated'), 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return $this->errorResponse(Lang::get('User not found'), "", 404);
+            return $this->errorResponse(__('messages.user.not_found'), "", 404);
         } catch (\Throwable $th) {
             $this->createLog("users", "Error retrieving user language", $id, $th);
-            return $this->errorResponse(Lang::get('There was an error, try again'), "", 500);
+            return $this->errorResponse(__('messages.general.error_retry'), "", 500);
         }
     }
 }

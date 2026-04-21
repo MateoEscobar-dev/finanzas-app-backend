@@ -291,3 +291,50 @@ $this->app->bind(
 - [ ] No hay lógica duplicada (usar Traits o Helpers)
 - [ ] Respuestas HTTP usan el Trait `ApiResponse`
 - [ ] Logs usan el Trait `LogTrait`
+- [ ] **Todos los mensajes de respuesta usan claves de traducción** — NUNCA strings literales en Controllers
+
+---
+
+## 11. Internacionalización (i18n) — OBLIGATORIO en mensajes de respuesta
+
+### Regla
+
+❌ **INCORRECTO — String literal hardcodeado**
+```php
+return $this->errorResponse('El usuario no fue encontrado', '', 404);
+return $this->successResponse($data, 'Usuario creado exitosamente', 201);
+```
+
+✅ **CORRECTO — Clave de traducción**
+```php
+return $this->errorResponse(__('messages.user.not_found'), '', 404);
+return $this->successResponse($data, __('messages.user.created'), 201);
+```
+
+### Estructura de archivos de traducción
+
+```
+lang/
+├── es/
+│   └── messages.php   ← Español (idioma principal del sistema)
+└── en/
+    └── messages.php   ← Inglés (fallback)
+```
+
+### Organización de claves en `messages.php`
+
+| Grupo | Prefijo | Ejemplo |
+|-------|---------|---------|
+| Autenticación | `messages.auth.*` | `messages.auth.credentials_incorrect` |
+| 2FA | `messages.two_factor.*` | `messages.two_factor.verified` |
+| Genéricos | `messages.general.*` | `messages.general.error_retry` |
+| Usuarios | `messages.user.*` | `messages.user.created` |
+| Roles | `messages.role.*` | `messages.role.not_found` |
+| Menús | `messages.menu.*` | `messages.menu.updated` |
+
+### Reglas adicionales
+
+- El locale por defecto es **`es`** (`APP_LOCALE=es` en `.env`)
+- Al agregar un mensaje nuevo → agregar la clave en **ambos** archivos (`es` y `en`)
+- Los mensajes de error de validación van en los `FormRequest` correspondientes, no en `messages.php`
+- Nunca exponer mensajes de excepción internos (`$e->getMessage()`) en respuestas HTTP
