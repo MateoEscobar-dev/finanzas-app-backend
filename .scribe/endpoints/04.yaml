@@ -1,21 +1,19 @@
-name: Usuarios
+name: 'Roles y Permisos'
 description: ''
 endpoints:
   -
     custom: []
     httpMethods:
       - GET
-    uri: api/user
+    uri: api/roles
     metadata:
       custom: []
-      groupName: Usuarios
+      groupName: 'Roles y Permisos'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Listar usuarios'
-      description: |-
-        Retorna una lista paginada de usuarios del sistema.
-        Soporta búsqueda por nombre, email o documento.
+      title: 'Listar roles'
+      description: 'Retorna una lista paginada de roles del sistema con sus permisos asociados.'
       authenticated: true
       deprecated: false
     headers:
@@ -50,9 +48,9 @@ endpoints:
       search:
         custom: []
         name: search
-        description: 'Término de búsqueda (nombre, email o documento).'
+        description: 'Término de búsqueda por nombre del rol.'
         required: false
-        example: Juan
+        example: Admin
         type: string
         enumValues: []
         exampleWasSpecified: true
@@ -61,7 +59,7 @@ endpoints:
     cleanQueryParameters:
       take: 10
       skip: 0
-      search: Juan
+      search: Admin
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -71,53 +69,28 @@ endpoints:
         status: 200
         content: |-
           {
-            "success": true,
-            "message": "Usuarios obtenidos exitosamente",
+            "status": "Success",
+            "message": "Roles obtenidos exitosamente",
             "data": {
-              "records": [
-                {
-                  "id": 1,
-                  "name": "Juan Pérez",
-                  "email": "usuario@ejemplo.com",
-                  "document": "****",
-                  "first_name": "Juan",
-                  "second_name": null,
-                  "first_last_name": "Pérez",
-                  "second_last_name": null,
-                  "address": "****",
-                  "phone": "****",
-                  "phone_ext": null,
-                  "birth_day": "1990-05-15",
-                  "lang": "es",
-                  "active": 1,
-                  "imagen": null,
-                  "email_verified_at": null,
-                  "created_at": "2025-01-01T00:00:00.000000Z",
-                  "updated_at": "2025-01-01T00:00:00.000000Z",
-                  "roles": ["User"],
-                  "permissions": ["ver-usuarios"]
-                }
-              ],
-              "pagination": {
-                "total": 50,
-                "take": 10,
-                "skip": 0,
-                "pages": 5,
-                "current_page": 1
-              }
-            }
+              "records": [{"id": 1, "name": "Administrator", "description": "Rol con acceso total", "active": true, "permissions": {"users": ["users.view"]}, "permissions_count": 1}],
+              "pagination": {"total": 5, "take": 10, "skip": 0, "pages": 1, "current_page": 1}
+            },
+            "code": 200
           }
         headers: []
-        description: 'Lista de usuarios'
+        description: 'Lista de roles'
       -
         custom: []
         status: 401
-        content: |-
-          {
-            "message": "Unauthenticated."
-          }
+        content: '{"message": "Unauthenticated."}'
         headers: []
         description: 'No autenticado'
+      -
+        custom: []
+        status: 403
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
+        headers: []
+        description: 'Sin permiso'
     responseFields: []
     auth:
       - headers
@@ -130,17 +103,15 @@ endpoints:
     custom: []
     httpMethods:
       - POST
-    uri: api/user
+    uri: api/roles
     metadata:
       custom: []
-      groupName: Usuarios
+      groupName: 'Roles y Permisos'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Crear usuario'
-      description: |-
-        Crea un nuevo usuario en el sistema y le asigna un rol con sus permisos correspondientes.
-        El campo `password` debe enviarse encriptado en AES-256-CBC.
+      title: 'Crear rol'
+      description: 'Crea un nuevo rol y opcionalmente le asigna permisos.'
       authenticated: true
       deprecated: false
     headers:
@@ -152,225 +123,79 @@ endpoints:
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      document:
+      name:
         custom: []
-        name: document
-        description: 'Documento de identidad (único, máx. 20 caracteres).'
+        name: name
+        description: 'Nombre del rol (único, máx. 100 caracteres).'
         required: true
-        example: '12345678'
+        example: Editor
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
-      first_name:
+      description:
         custom: []
-        name: first_name
-        description: 'Primer nombre (máx. 100 caracteres).'
-        required: true
-        example: Juan
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      second_name:
-        custom: []
-        name: second_name
-        description: 'Segundo nombre (opcional).'
+        name: description
+        description: 'Descripción del rol (opcional, máx. 255 caracteres).'
         required: false
-        example: Carlos
+        example: 'Rol con acceso de edición'
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: false
+        nullable: true
         deprecated: false
-      first_last_name:
+      active:
         custom: []
-        name: first_last_name
-        description: 'Primer apellido (máx. 100 caracteres).'
-        required: true
-        example: Pérez
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      second_last_name:
-        custom: []
-        name: second_last_name
-        description: 'Segundo apellido (opcional).'
+        name: active
+        description: 'Si el rol está activo (por defecto: true).'
         required: false
-        example: Gómez
-        type: string
+        example: true
+        type: boolean
         enumValues: []
         exampleWasSpecified: true
-        nullable: false
+        nullable: true
         deprecated: false
-      email:
+      permissions:
         custom: []
-        name: email
-        description: 'Correo electrónico válido y único.'
-        required: true
-        example: nuevo@ejemplo.com
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      password:
-        custom: []
-        name: password
-        description: 'Contraseña encriptada AES-256-CBC.'
-        required: true
-        example: U2FsdGVkX1+xyz...
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      phone:
-        custom: []
-        name: phone
-        description: 'Teléfono en formato E.164.'
-        required: true
-        example: '+573001234567'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      phone_ext:
-        custom: []
-        name: phone_ext
-        description: 'Extensión telefónica (opcional).'
+        name: permissions
+        description: 'Nombres de permisos a asignar.'
         required: false
-        example: '101'
-        type: numeric
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      birth_day:
-        custom: []
-        name: birth_day
-        description: 'Fecha de nacimiento YYYY-MM-DD. Debe ser mayor de 18 años.'
-        required: true
-        example: '1990-05-15'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      address:
-        custom: []
-        name: address
-        description: 'Dirección (opcional).'
-        required: false
-        example: 'Calle 123 # 45-67'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      lang:
-        custom: []
-        name: lang
-        description: 'Idioma preferido del usuario (es|en). Por defecto: es.'
-        required: false
-        example: es
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      id_rol:
-        custom: []
-        name: id_rol
-        description: 'ID del rol a asignar (ver GET /api/roles).'
-        required: true
-        example: 1
-        type: integer
+        example:
+          - users.view
+          - users.edit
+        type: 'string[]'
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      document: '12345678'
-      first_name: Juan
-      second_name: Carlos
-      first_last_name: Pérez
-      second_last_name: Gómez
-      email: nuevo@ejemplo.com
-      password: U2FsdGVkX1+xyz...
-      phone: '+573001234567'
-      phone_ext: '101'
-      birth_day: '1990-05-15'
-      address: 'Calle 123 # 45-67'
-      lang: es
-      id_rol: 1
+      name: Editor
+      description: 'Rol con acceso de edición'
+      active: true
+      permissions:
+        - users.view
+        - users.edit
     fileParameters: []
     responses:
       -
         custom: []
         status: 201
-        content: |-
-          {
-            "success": true,
-            "message": "Usuario creado exitosamente",
-            "data": {
-              "id": 10,
-              "name": "Juan Pérez",
-              "email": "nuevo@ejemplo.com",
-              "document": "****",
-              "first_name": "Juan",
-              "second_name": "Carlos",
-              "first_last_name": "Pérez",
-              "second_last_name": "Gómez",
-              "address": "****",
-              "phone": "****",
-              "phone_ext": 101,
-              "birth_day": "1990-05-15",
-              "lang": "es",
-              "active": 1,
-              "imagen": null,
-              "roles": ["User"],
-              "permissions": ["ver-usuarios"]
-            }
-          }
+        content: '{"status": "Success", "message": "Rol creado exitosamente", "data": {"id": 3, "name": "Editor", "description": "Rol con acceso de edición", "active": true, "permissions": {"users": ["users.view", "users.edit"]}}, "code": 201}'
         headers: []
-        description: 'Usuario creado'
+        description: 'Rol creado'
       -
         custom: []
-        status: 401
-        content: |-
-          {
-            "message": "Unauthenticated."
-          }
+        status: 403
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
         headers: []
-        description: 'No autenticado'
+        description: 'Sin permiso'
       -
         custom: []
         status: 422
-        content: |-
-          {
-            "success": false,
-            "message": "El rol especificado no existe",
-            "errors": ""
-          }
+        content: '{"status": "Error", "message": "Los datos proporcionados no son válidos", "errors": {"name": ["El nombre del rol ya está en uso."]}, "code": 422}'
         headers: []
-        description: 'Rol no encontrado'
-      -
-        custom: []
-        status: 422
-        content: |-
-          {
-            "success": false,
-            "message": "Los datos proporcionados no son válidos",
-            "errors": { "email": ["El correo electrónico ya está registrado."] }
-          }
-        headers: []
-        description: 'Validación fallida'
+        description: 'Nombre duplicado'
     responseFields: []
     auth:
       - headers
@@ -383,15 +208,15 @@ endpoints:
     custom: []
     httpMethods:
       - GET
-    uri: 'api/user/{id}'
+    uri: 'api/roles/{id}'
     metadata:
       custom: []
-      groupName: Usuarios
+      groupName: 'Roles y Permisos'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Obtener usuario'
-      description: 'Retorna los datos completos de un usuario específico, incluyendo roles y permisos.'
+      title: 'Obtener rol'
+      description: 'Retorna los datos de un rol específico con sus permisos agrupados por módulo.'
       authenticated: true
       deprecated: false
     headers:
@@ -402,7 +227,7 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'ID del usuario.'
+        description: 'ID del rol.'
         required: true
         example: 1
         type: integer
@@ -423,53 +248,35 @@ endpoints:
         status: 200
         content: |-
           {
-            "success": true,
-            "message": "Usuario obtenido exitosamente",
+            "status": "Success",
+            "message": "Rol obtenido exitosamente",
             "data": {
               "id": 1,
-              "name": "Juan Pérez",
-              "email": "usuario@ejemplo.com",
-              "document": "****",
-              "first_name": "Juan",
-              "second_name": null,
-              "first_last_name": "Pérez",
-              "second_last_name": null,
-              "address": "****",
-              "phone": "****",
-              "phone_ext": null,
-              "birth_day": "1990-05-15",
-              "lang": "es",
-              "active": 1,
-              "imagen": null,
-              "email_verified_at": null,
-              "created_at": "2025-01-01T00:00:00.000000Z",
-              "updated_at": "2025-01-01T00:00:00.000000Z",
-              "roles": ["User"],
-              "permissions": ["ver-usuarios"]
-            }
+              "name": "Administrator",
+              "description": "Rol con acceso total",
+              "active": true,
+              "permissions": {
+                "users": ["users.view", "users.add", "users.edit", "users.destroy"],
+                "roles": ["roles.view", "roles.edit"]
+              },
+              "permissions_count": 6
+            },
+            "code": 200
           }
         headers: []
-        description: 'Usuario encontrado'
+        description: 'Rol encontrado'
       -
         custom: []
-        status: 401
-        content: |-
-          {
-            "message": "Unauthenticated."
-          }
+        status: 403
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
         headers: []
-        description: 'No autenticado'
+        description: 'Sin permiso'
       -
         custom: []
         status: 404
-        content: |-
-          {
-            "success": false,
-            "message": "El usuario no fue encontrado",
-            "errors": ""
-          }
+        content: '{"status": "Error", "message": "El rol no fue encontrado", "code": 404}'
         headers: []
-        description: 'Usuario no encontrado'
+        description: 'No encontrado'
     responseFields: []
     auth:
       - headers
@@ -483,18 +290,15 @@ endpoints:
     httpMethods:
       - PUT
       - PATCH
-    uri: 'api/user/{id}'
+    uri: 'api/roles/{id}'
     metadata:
       custom: []
-      groupName: Usuarios
+      groupName: 'Roles y Permisos'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Actualizar usuario'
-      description: |-
-        Actualiza los datos de un usuario existente. Solo se procesan los campos enviados.
-        Si se envía `id_rol`, se sincroniza el rol y sus permisos.
-        No se actualiza la contraseña si se envía vacía.
+      title: 'Actualizar rol'
+      description: 'Actualiza los campos de un rol existente. Si se envía `permissions`, se sincronizan.'
       authenticated: true
       deprecated: false
     headers:
@@ -505,7 +309,7 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'ID del usuario a actualizar.'
+        description: 'ID del rol a actualizar.'
         required: true
         example: 1
         type: integer
@@ -518,201 +322,79 @@ endpoints:
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      document:
+      name:
         custom: []
-        name: document
-        description: 'Documento de identidad (único).'
+        name: name
+        description: 'Nuevo nombre del rol (único).'
         required: false
-        example: '12345678'
+        example: 'Super Admin'
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: false
+        nullable: true
         deprecated: false
-      first_name:
+      description:
         custom: []
-        name: first_name
-        description: 'Primer nombre.'
+        name: description
+        description: 'Descripción del rol.'
         required: false
-        example: Juan
+        example: 'Rol principal del sistema'
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: false
+        nullable: true
         deprecated: false
-      second_name:
+      active:
         custom: []
-        name: second_name
-        description: 'Segundo nombre (opcional).'
+        name: active
+        description: 'Estado del rol.'
         required: false
-        example: Carlos
-        type: string
+        example: true
+        type: boolean
         enumValues: []
         exampleWasSpecified: true
-        nullable: false
+        nullable: true
         deprecated: false
-      first_last_name:
+      permissions:
         custom: []
-        name: first_last_name
-        description: 'Primer apellido.'
+        name: permissions
+        description: 'Permisos a sincronizar (opcional).'
         required: false
-        example: Pérez
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      second_last_name:
-        custom: []
-        name: second_last_name
-        description: 'Segundo apellido (opcional).'
-        required: false
-        example: Gómez
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      email:
-        custom: []
-        name: email
-        description: 'Correo electrónico válido y único.'
-        required: false
-        example: actualizado@ejemplo.com
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      phone:
-        custom: []
-        name: phone
-        description: 'Teléfono en formato E.164.'
-        required: false
-        example: '+573001234567'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      phone_ext:
-        custom: []
-        name: phone_ext
-        description: 'Extensión telefónica (opcional).'
-        required: false
-        example: '101'
-        type: numeric
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      birth_day:
-        custom: []
-        name: birth_day
-        description: 'Fecha de nacimiento YYYY-MM-DD.'
-        required: false
-        example: '1990-05-15'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      address:
-        custom: []
-        name: address
-        description: 'Dirección (opcional).'
-        required: false
-        example: 'Calle 123 # 45-67'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      lang:
-        custom: []
-        name: lang
-        description: 'Idioma preferido (es|en).'
-        required: false
-        example: es
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-      id_rol:
-        custom: []
-        name: id_rol
-        description: 'ID del nuevo rol a asignar.'
-        required: false
-        example: 2
-        type: integer
+        example:
+          - users.view
+          - users.edit
+        type: 'string[]'
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      document: '12345678'
-      first_name: Juan
-      second_name: Carlos
-      first_last_name: Pérez
-      second_last_name: Gómez
-      email: actualizado@ejemplo.com
-      phone: '+573001234567'
-      phone_ext: '101'
-      birth_day: '1990-05-15'
-      address: 'Calle 123 # 45-67'
-      lang: es
-      id_rol: 2
+      name: 'Super Admin'
+      description: 'Rol principal del sistema'
+      active: true
+      permissions:
+        - users.view
+        - users.edit
     fileParameters: []
     responses:
       -
         custom: []
         status: 200
-        content: |-
-          {
-            "success": true,
-            "message": "Usuario actualizado exitosamente",
-            "data": {
-              "id": 1,
-              "name": "Juan Pérez",
-              "email": "actualizado@ejemplo.com",
-              "roles": ["Admin"],
-              "permissions": ["ver-usuarios", "crear-usuarios"]
-            }
-          }
+        content: '{"status": "Success", "message": "Rol actualizado exitosamente", "data": {"id": 1, "name": "Super Admin"}, "code": 200}'
         headers: []
-        description: 'Usuario actualizado'
+        description: Actualizado
       -
         custom: []
-        status: 401
-        content: |-
-          {
-            "message": "Unauthenticated."
-          }
+        status: 403
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
         headers: []
-        description: 'No autenticado'
+        description: 'Sin permiso'
       -
         custom: []
         status: 404
-        content: |-
-          {
-            "success": false,
-            "message": "El usuario no fue encontrado",
-            "errors": ""
-          }
+        content: '{"status": "Error", "message": "El rol no fue encontrado", "code": 404}'
         headers: []
-        description: 'Usuario no encontrado'
-      -
-        custom: []
-        status: 422
-        content: |-
-          {
-            "success": false,
-            "message": "El rol especificado no existe",
-            "errors": ""
-          }
-        headers: []
-        description: 'Rol no encontrado'
+        description: 'No encontrado'
     responseFields: []
     auth:
       - headers
@@ -725,17 +407,15 @@ endpoints:
     custom: []
     httpMethods:
       - DELETE
-    uri: 'api/user/{id}'
+    uri: 'api/roles/{id}'
     metadata:
       custom: []
-      groupName: Usuarios
+      groupName: 'Roles y Permisos'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Eliminar usuario'
-      description: |-
-        Elimina permanentemente un usuario del sistema junto con sus roles,
-        permisos y tokens de sesión. No se puede eliminar al usuario autenticado.
+      title: 'Eliminar rol'
+      description: 'Elimina un rol del sistema. No se puede eliminar si tiene usuarios asignados.'
       authenticated: true
       deprecated: false
     headers:
@@ -746,16 +426,16 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'ID del usuario a eliminar.'
+        description: 'ID del rol a eliminar.'
         required: true
-        example: 5
+        example: 3
         type: integer
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: 5
+      id: 3
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -765,45 +445,27 @@ endpoints:
       -
         custom: []
         status: 200
-        content: |-
-          {
-            "success": true,
-            "message": "Usuario eliminado exitosamente",
-            "data": []
-          }
+        content: '{"status": "Success", "message": "Rol eliminado exitosamente", "data": [], "code": 200}'
         headers: []
-        description: 'Usuario eliminado'
-      -
-        custom: []
-        status: 401
-        content: |-
-          {
-            "message": "Unauthenticated."
-          }
-        headers: []
-        description: 'No autenticado'
+        description: Eliminado
       -
         custom: []
         status: 403
-        content: |-
-          {
-            "success": false,
-            "message": "No puedes eliminar tu propia cuenta",
-            "errors": ""
-          }
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
         headers: []
-        description: 'Intento de eliminar cuenta propia'
+        description: 'Sin permiso'
       -
         custom: []
         status: 404
-        content: |-
-          {
-            "success": false,
-            "message": "El usuario no fue encontrado",
-            "errors": ""
-          }
+        content: '{"status": "Error", "message": "El rol no fue encontrado", "code": 404}'
         headers: []
-        description: 'Usuario no encontrado'
+        description: 'No encontrado'
+      -
+        custom: []
+        status: 409
+        content: '{"status": "Error", "message": "El rol tiene usuarios asignados y no puede eliminarse.", "code": 409}'
+        headers: []
+        description: 'Tiene usuarios'
     responseFields: []
     auth:
       - headers
@@ -816,15 +478,15 @@ endpoints:
     custom: []
     httpMethods:
       - POST
-    uri: 'api/user/{user}/activate'
+    uri: 'api/roles/{id}/activate'
     metadata:
       custom: []
-      groupName: Usuarios
+      groupName: 'Roles y Permisos'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Activar usuario'
-      description: 'Activa un usuario que se encontraba inactivo, permitiéndole iniciar sesión nuevamente.'
+      title: 'Activar rol'
+      description: 'Activa un rol que se encontraba inactivo.'
       authenticated: true
       deprecated: false
     headers:
@@ -832,19 +494,19 @@ endpoints:
       Content-Type: application/json
       Accept: application/json
     urlParameters:
-      user:
+      id:
         custom: []
-        name: user
-        description: 'ID del usuario a activar.'
+        name: id
+        description: 'ID del rol a activar.'
         required: true
-        example: 3
+        example: 2
         type: integer
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      user: 3
+      id: 2
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -854,34 +516,21 @@ endpoints:
       -
         custom: []
         status: 200
-        content: |-
-          {
-            "success": true,
-            "message": "Usuario activado exitosamente",
-            "data": []
-          }
+        content: '{"status": "Success", "message": "Rol activado exitosamente", "data": {"id": 2, "name": "Editor", "active": true}, "code": 200}'
         headers: []
-        description: 'Usuario activado'
+        description: Activado
       -
         custom: []
-        status: 401
-        content: |-
-          {
-            "message": "Unauthenticated."
-          }
+        status: 403
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
         headers: []
-        description: 'No autenticado'
+        description: 'Sin permiso'
       -
         custom: []
         status: 404
-        content: |-
-          {
-            "success": false,
-            "message": "Registro no encontrado",
-            "errors": ""
-          }
+        content: '{"status": "Error", "message": "El rol no fue encontrado", "code": 404}'
         headers: []
-        description: 'Usuario no encontrado'
+        description: 'No encontrado'
     responseFields: []
     auth:
       - headers
@@ -894,15 +543,15 @@ endpoints:
     custom: []
     httpMethods:
       - POST
-    uri: 'api/user/{user}/deactivate'
+    uri: 'api/roles/{id}/deactivate'
     metadata:
       custom: []
-      groupName: Usuarios
+      groupName: 'Roles y Permisos'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Desactivar usuario'
-      description: 'Desactiva un usuario impidiéndole iniciar sesión. Los datos no se eliminan.'
+      title: 'Desactivar rol'
+      description: 'Desactiva un rol sin eliminarlo del sistema.'
       authenticated: true
       deprecated: false
     headers:
@@ -910,19 +559,19 @@ endpoints:
       Content-Type: application/json
       Accept: application/json
     urlParameters:
-      user:
+      id:
         custom: []
-        name: user
-        description: 'ID del usuario a desactivar.'
+        name: id
+        description: 'ID del rol a desactivar.'
         required: true
-        example: 3
+        example: 2
         type: integer
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      user: 3
+      id: 2
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -932,34 +581,21 @@ endpoints:
       -
         custom: []
         status: 200
-        content: |-
-          {
-            "success": true,
-            "message": "Usuario desactivado exitosamente",
-            "data": []
-          }
+        content: '{"status": "Success", "message": "Rol desactivado exitosamente", "data": {"id": 2, "name": "Editor", "active": false}, "code": 200}'
         headers: []
-        description: 'Usuario desactivado'
+        description: Desactivado
       -
         custom: []
-        status: 401
-        content: |-
-          {
-            "message": "Unauthenticated."
-          }
+        status: 403
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
         headers: []
-        description: 'No autenticado'
+        description: 'Sin permiso'
       -
         custom: []
         status: 404
-        content: |-
-          {
-            "success": false,
-            "message": "Registro no encontrado",
-            "errors": ""
-          }
+        content: '{"status": "Error", "message": "El rol no fue encontrado", "code": 404}'
         headers: []
-        description: 'Usuario no encontrado'
+        description: 'No encontrado'
     responseFields: []
     auth:
       - headers
@@ -971,18 +607,18 @@ endpoints:
   -
     custom: []
     httpMethods:
-      - GET
-    uri: 'api/user/{user}/history'
+      - POST
+    uri: 'api/roles/{id}/permissions'
     metadata:
       custom: []
-      groupName: Usuarios
+      groupName: 'Roles y Permisos'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Historial de actividad del usuario'
+      title: 'Sincronizar permisos del rol'
       description: |-
-        Retorna el historial de cambios y actividad registrada del usuario especificado.
-        Incluye todos los eventos auditados (creación, modificación, etc.).
+        Reemplaza todos los permisos del rol con los enviados en el payload.
+        Usa `syncPermissions()` de Spatie.
       authenticated: true
       deprecated: false
     headers:
@@ -990,10 +626,10 @@ endpoints:
       Content-Type: application/json
       Accept: application/json
     urlParameters:
-      user:
+      id:
         custom: []
-        name: user
-        description: 'ID del usuario.'
+        name: id
+        description: 'ID del rol.'
         required: true
         example: 1
         type: integer
@@ -1002,117 +638,29 @@ endpoints:
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      user: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        custom: []
-        status: 200
-        content: |-
-          {
-            "success": true,
-            "message": "Historial obtenido exitosamente",
-            "data": {
-              "user": {
-                "id": 1,
-                "name": "Juan Pérez",
-                "email": "usuario@ejemplo.com"
-              },
-              "logs": [
-                {
-                  "id": 10,
-                  "table": "users",
-                  "type": "UPDATE OF THE REGISTRY",
-                  "id_item": 1,
-                  "reason": "User information updated",
-                  "created_at": "2025-03-01T12:00:00.000000Z"
-                }
-              ]
-            }
-          }
-        headers: []
-        description: 'Historial obtenido'
-      -
-        custom: []
-        status: 401
-        content: |-
-          {
-            "message": "Unauthenticated."
-          }
-        headers: []
-        description: 'No autenticado'
-      -
-        custom: []
-        status: 404
-        content: |-
-          {
-            "success": false,
-            "message": "El usuario no fue encontrado",
-            "errors": ""
-          }
-        headers: []
-        description: 'Usuario no encontrado'
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - POST
-    uri: 'api/user/{user}/language'
-    metadata:
-      custom: []
-      groupName: Usuarios
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Actualizar idioma del usuario'
-      description: 'Actualiza la preferencia de idioma del usuario especificado.'
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {BEARER_TOKEN}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      user:
-        custom: []
-        name: user
-        description: 'ID del usuario.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-    cleanUrlParameters:
-      user: 1
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      lang:
+      permissions:
         custom: []
-        name: lang
-        description: 'Código de idioma (es|en).'
+        name: permissions
+        description: 'Nombres de permisos a asignar.'
         required: true
-        example: en
-        type: string
+        example:
+          - users.view
+          - users.add
+          - users.edit
+        type: 'string[]'
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      lang: en
+      permissions:
+        - users.view
+        - users.add
+        - users.edit
     fileParameters: []
     responses:
       -
@@ -1120,34 +668,31 @@ endpoints:
         status: 200
         content: |-
           {
-            "success": true,
-            "message": "Idioma actualizado exitosamente",
-            "data": {
-              "lang": "en"
-            }
+            "status": "Success",
+            "message": "Permisos del rol sincronizados exitosamente",
+            "data": {"id": 1, "name": "Administrator", "permissions": {"users": ["users.view", "users.add"]}},
+            "code": 200
           }
         headers: []
-        description: 'Idioma actualizado'
+        description: 'Permisos sincronizados'
       -
         custom: []
-        status: 401
-        content: |-
-          {
-            "message": "Unauthenticated."
-          }
+        status: 403
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
         headers: []
-        description: 'No autenticado'
+        description: 'Sin permiso'
       -
         custom: []
         status: 404
-        content: |-
-          {
-            "success": false,
-            "message": "El usuario no fue encontrado",
-            "errors": ""
-          }
+        content: '{"status": "Error", "message": "El rol no fue encontrado", "code": 404}'
         headers: []
-        description: 'Usuario no encontrado'
+        description: 'No encontrado'
+      -
+        custom: []
+        status: 422
+        content: '{"status": "Error", "message": "Los datos proporcionados no son válidos", "errors": {"permissions.0": ["Uno o más permisos especificados no existen."]}, "code": 422}'
+        headers: []
+        description: 'Permiso inválido'
     responseFields: []
     auth:
       - headers

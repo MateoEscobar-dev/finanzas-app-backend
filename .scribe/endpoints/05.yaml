@@ -1,0 +1,179 @@
+name: Permisos
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/permissions
+    metadata:
+      custom: []
+      groupName: Permisos
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Listar permisos'
+      description: |-
+        Retorna todos los permisos del sistema paginados.
+        Cada permiso incluye el campo `module` extraído del prefijo del nombre
+        (ej: `users.add` → módulo `users`).
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      take:
+        custom: []
+        name: take
+        description: 'Número de registros a retornar (1-100). Por defecto: 50.'
+        required: false
+        example: 50
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      skip:
+        custom: []
+        name: skip
+        description: 'Número de registros a saltar (offset). Por defecto: 0.'
+        required: false
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      search:
+        custom: []
+        name: search
+        description: 'Término de búsqueda por nombre del permiso.'
+        required: false
+        example: users
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      take: 50
+      skip: 0
+      search: users
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "status": "Success",
+            "message": "Permisos obtenidos exitosamente",
+            "data": {
+              "records": [
+                {"id": 1, "name": "users.view", "module": "users", "guard_name": "api"},
+                {"id": 2, "name": "users.add",  "module": "users", "guard_name": "api"},
+                {"id": 3, "name": "roles.view", "module": "roles", "guard_name": "api"}
+              ],
+              "pagination": {"total": 15, "take": 50, "skip": 0, "pages": 1, "current_page": 1}
+            },
+            "code": 200
+          }
+        headers: []
+        description: 'Lista de permisos'
+      -
+        custom: []
+        status: 401
+        content: '{"message": "Unauthenticated."}'
+        headers: []
+        description: 'No autenticado'
+      -
+        custom: []
+        status: 403
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
+        headers: []
+        description: 'Sin permiso'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/permissions/{id}'
+    metadata:
+      custom: []
+      groupName: Permisos
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Obtener permiso'
+      description: 'Retorna los datos de un permiso específico, incluyendo el módulo al que pertenece.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'ID del permiso.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "status": "Success",
+            "message": "Permiso obtenido exitosamente",
+            "data": {"id": 1, "name": "users.view", "module": "users", "guard_name": "api"},
+            "code": 200
+          }
+        headers: []
+        description: 'Permiso encontrado'
+      -
+        custom: []
+        status: 403
+        content: '{"status": "Error", "message": "No tienes permiso para realizar esta acción.", "code": 403}'
+        headers: []
+        description: 'Sin permiso'
+      -
+        custom: []
+        status: 404
+        content: '{"status": "Error", "message": "El permiso no fue encontrado", "code": 404}'
+        headers: []
+        description: 'No encontrado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
