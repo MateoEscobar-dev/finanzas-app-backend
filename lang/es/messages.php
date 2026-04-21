@@ -27,6 +27,7 @@ return [
         'error_retry'       => 'Hubo un error, inténtalo de nuevo.',
         'validation_failed' => 'Los datos proporcionados no son válidos.',
         'record_not_found'  => 'Registro no encontrado.',
+        'forbidden'         => 'No tienes permiso para realizar esta acción.',
     ],
 
     'user' => [
@@ -45,13 +46,29 @@ return [
         'deactivated'           => 'Usuario desactivado exitosamente.',
         'history_success'       => 'Historial del usuario obtenido correctamente.',
         'language_updated'      => 'Idioma del usuario actualizado exitosamente.',
+        'permissions_success'   => 'Permisos del usuario obtenidos correctamente.',
+        'permissions_synced'    => 'Permisos sincronizados exitosamente.',
+        'roles_synced'          => 'Roles sincronizados exitosamente.',
     ],
 
     'role' => [
         'list_success'        => 'Roles obtenidos correctamente.',
         'show_success'        => 'Rol obtenido correctamente.',
         'not_found'           => 'Rol no encontrado.',
+        'created'             => 'Rol creado exitosamente.',
+        'updated'             => 'Rol actualizado exitosamente.',
+        'deleted'             => 'Rol eliminado exitosamente.',
+        'activated'           => 'Rol activado exitosamente.',
+        'deactivated'         => 'Rol desactivado exitosamente.',
         'permissions_success' => 'Permisos obtenidos correctamente.',
+        'permissions_synced'  => 'Permisos del rol sincronizados exitosamente.',
+        'has_users'           => 'El rol tiene usuarios asignados y no puede eliminarse.',
+    ],
+
+    'permission' => [
+        'list_success' => 'Permisos obtenidos correctamente.',
+        'show_success' => 'Permiso obtenido correctamente.',
+        'not_found'    => 'Permiso no encontrado.',
     ],
 
     'menu' => [
