@@ -44,7 +44,7 @@ abstract class BaseRepository
      *
      * @return array{records: \Illuminate\Database\Eloquent\Collection, pagination: array}
      */
-    public function paginate(\Illuminate\Database\Eloquent\Builder $query, int $take, int $skip): array
+    protected function paginateQuery(\Illuminate\Database\Eloquent\Builder $query, int $take, int $skip): array
     {
         $take  = max(1, min($take, 100));
         $skip  = max(0, $skip);

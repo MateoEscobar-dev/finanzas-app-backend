@@ -40,7 +40,7 @@ class EloquentUserRepository extends BaseRepository implements UserRepositoryInt
             });
         }
 
-        return parent::paginate($query, $take, $skip);
+        return $this->paginateQuery($query, $take, $skip);
     }
 
     public function create(array $data): User

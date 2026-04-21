@@ -32,7 +32,7 @@ class EloquentRoleRepository extends BaseRepository implements RoleRepositoryInt
             $query->where('name', 'like', "%{$search}%");
         }
 
-        return parent::paginate($query, $take, $skip);
+        return $this->paginateQuery($query, $take, $skip);
     }
 
     public function create(array $data): Role

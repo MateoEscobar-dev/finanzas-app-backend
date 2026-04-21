@@ -32,7 +32,7 @@ class EloquentPermissionRepository extends BaseRepository implements PermissionR
             $query->where('name', 'like', "%{$search}%");
         }
 
-        return parent::paginate($query, $take, $skip);
+        return $this->paginateQuery($query, $take, $skip);
     }
 
     public function findByNames(array $names): Collection
