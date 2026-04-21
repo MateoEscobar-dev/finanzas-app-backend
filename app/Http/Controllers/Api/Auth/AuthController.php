@@ -25,7 +25,74 @@ class AuthController extends Controller
         private readonly TwoFactorServiceInterface $twoFactor,
     ) {}
 
-    // POST /api/login
+    /**
+     * Iniciar sesión
+     *
+     * Autentica al usuario con sus credenciales y devuelve un Bearer Token de Sanctum.
+     * Si el usuario tiene 2FA activo, el campo `requires_2fa` será `true` y deberá
+     * verificarse en `POST /api/2fa/verify` antes de acceder a recursos protegidos.
+     *
+     * @group Autenticación
+     * @unauthenticated
+     *
+     * @bodyParam email string required Correo electrónico registrado. Example: usuario@ejemplo.com
+     * @bodyParam password string required Contraseña encriptada en AES-256-CBC (CryptoJS). No envíar en texto plano. Example: U2FsdGVkX1+abc123...
+     *
+     * @response 200 scenario="Sesión iniciada" {
+     *   "success": true,
+     *   "message": "Sesión iniciada correctamente",
+     *   "data": {
+     *     "token": "1|aBcDeFgHiJkLmN...",
+     *     "token_type": "Bearer",
+     *     "requires_2fa": false,
+     *     "user": {
+     *       "id": 1,
+     *       "name": "Juan Pérez",
+     *       "email": "usuario@ejemplo.com",
+     *       "first_name": "Juan",
+     *       "second_name": null,
+     *       "first_last_name": "Pérez",
+     *       "second_last_name": null,
+     *       "phone": "****",
+     *       "phone_ext": null,
+     *       "active": 1,
+     *       "imagen": null,
+     *       "lang": "es",
+     *       "has_2fa": false,
+     *       "roles": ["User"],
+     *       "permissions": ["ver-usuarios"]
+     *     }
+     *   }
+     * }
+     * @response 200 scenario="2FA requerido" {
+     *   "success": true,
+     *   "message": "Sesión iniciada correctamente",
+     *   "data": {
+     *     "token": "2|xYzAbC...",
+     *     "token_type": "Bearer",
+     *     "requires_2fa": true,
+     *     "user": { "id": 2, "name": "María López", "email": "maria@ejemplo.com" }
+     *   }
+     * }
+     * @response 401 scenario="Credenciales incorrectas" {
+     *   "success": false,
+     *   "message": "Las credenciales son incorrectas",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="Usuario inactivo" {
+     *   "success": false,
+     *   "message": "El usuario se encuentra inactivo",
+     *   "errors": ""
+     * }
+     * @response 422 scenario="Validación fallida" {
+     *   "success": false,
+     *   "message": "Los datos proporcionados no son válidos",
+     *   "errors": { "email": ["El correo electrónico es obligatorio."] }
+     * }
+     * @response 429 scenario="Demasiados intentos" {
+     *   "message": "Too Many Requests"
+     * }
+     */
     public function login(LoginRequest $request)
     {
         try {
@@ -70,7 +137,59 @@ class AuthController extends Controller
         }
     }
 
-    // POST /api/register
+    /**
+     * Registrar nuevo usuario
+     *
+     * Crea una nueva cuenta de usuario en el sistema. El usuario recibe automáticamente
+     * el rol `User` y un Bearer Token listo para usar.
+     * La contraseña debe enviarse encriptada en AES-256-CBC.
+     *
+     * @group Autenticación
+     * @unauthenticated
+     *
+     * @bodyParam document string required Número de documento de identidad (único, máx. 20 caracteres). Example: 12345678
+     * @bodyParam first_name string required Primer nombre (máx. 100 caracteres). Example: Juan
+     * @bodyParam second_name string Segundo nombre (opcional, máx. 100 caracteres). Example: Carlos
+     * @bodyParam first_last_name string required Primer apellido (máx. 100 caracteres). Example: Pérez
+     * @bodyParam second_last_name string Segundo apellido (opcional, máx. 100 caracteres). Example: Gómez
+     * @bodyParam email string required Correo electrónico válido y único (último máx. 255 caracteres). Example: nuevo@ejemplo.com
+     * @bodyParam password string required Contraseña encriptada AES-256-CBC (mínimo 8 caracteres, 1 mayúscula, 1 número, 1 especial). Example: U2FsdGVkX1+xyz...
+     * @bodyParam phone string required Teléfono en formato E.164 (ej: +573001234567). Example: +573001234567
+     * @bodyParam phone_ext numeric Extensión telefónica (opcional, 1-10 dígitos). Example: 101
+     * @bodyParam birth_day string required Fecha de nacimiento en formato YYYY-MM-DD. Debe ser mayor de 18 años. Example: 1990-05-15
+     *
+     * @response 201 scenario="Usuario creado" {
+     *   "success": true,
+     *   "message": "Usuario registrado exitosamente",
+     *   "data": {
+     *     "token": "3|pQrStUvW...",
+     *     "token_type": "Bearer",
+     *     "user": {
+     *       "id": 5,
+     *       "name": "Juan Pérez",
+     *       "email": "nuevo@ejemplo.com",
+     *       "first_name": "Juan",
+     *       "second_name": "Carlos",
+     *       "first_last_name": "Pérez",
+     *       "second_last_name": "Gómez",
+     *       "phone": "****",
+     *       "active": 1,
+     *       "lang": "es",
+     *       "has_2fa": false,
+     *       "roles": ["User"],
+     *       "permissions": []
+     *     }
+     *   }
+     * }
+     * @response 422 scenario="Validación fallida" {
+     *   "success": false,
+     *   "message": "Los datos proporcionados no son válidos",
+     *   "errors": { "email": ["El correo electrónico ya está registrado."] }
+     * }
+     * @response 429 scenario="Demasiados intentos" {
+     *   "message": "Too Many Requests"
+     * }
+     */
     public function register(RegisterRequest $request)
     {
         try {
@@ -108,7 +227,31 @@ class AuthController extends Controller
         }
     }
 
-    // POST /api/forgot-password
+    /**
+     * Recuperar contraseña
+     *
+     * Envía un enlace de recuperación al correo registrado.
+     * La respuesta es genérica para no revelar si el email existe en el sistema.
+     *
+     * @group Autenticación
+     * @unauthenticated
+     *
+     * @bodyParam email string required Correo electrónico asociado a la cuenta. Example: usuario@ejemplo.com
+     *
+     * @response 200 scenario="Enlace enviado" {
+     *   "success": true,
+     *   "message": "Si el correo está registrado, recibirás un enlace de recuperación",
+     *   "data": []
+     * }
+     * @response 422 scenario="Validación fallida" {
+     *   "success": false,
+     *   "message": "Los datos proporcionados no son válidos",
+     *   "errors": { "email": ["El correo electrónico es obligatorio."] }
+     * }
+     * @response 429 scenario="Demasiados intentos" {
+     *   "message": "Too Many Requests"
+     * }
+     */
     public function forgotPassword(ForgotPasswordRequest $request)
     {
         // Respuesta genérica para no revelar si el email existe en la BD
@@ -121,7 +264,39 @@ class AuthController extends Controller
         );
     }
 
-    // POST /api/reset-password
+    /**
+     * Restablecer contraseña
+     *
+     * Restablece la contraseña del usuario usando el token enviado por correo.
+     * Todos los tokens de sesión son invalidados tras el reset exitoso.
+     * La nueva contraseña debe enviarse encriptada en AES-256-CBC.
+     *
+     * @group Autenticación
+     * @unauthenticated
+     *
+     * @bodyParam email string required Correo electrónico de la cuenta. Example: usuario@ejemplo.com
+     * @bodyParam token string required Token de recuperación recibido por correo. Example: a1b2c3d4e5f6...
+     * @bodyParam password string required Nueva contraseña encriptada AES-256-CBC. Example: U2FsdGVkX1+newpass...
+     *
+     * @response 200 scenario="Contraseña restablecida" {
+     *   "success": true,
+     *   "message": "Contraseña restablecida exitosamente",
+     *   "data": []
+     * }
+     * @response 422 scenario="Token inválido o expirado" {
+     *   "success": false,
+     *   "message": "El token de recuperación es inválido o ha expirado",
+     *   "errors": ""
+     * }
+     * @response 422 scenario="Validación fallida" {
+     *   "success": false,
+     *   "message": "Los datos proporcionados no son válidos",
+     *   "errors": { "token": ["El token es obligatorio."] }
+     * }
+     * @response 429 scenario="Demasiados intentos" {
+     *   "message": "Too Many Requests"
+     * }
+     */
     public function resetPassword(ResetPasswordRequest $request)
     {
         try {
@@ -159,7 +334,24 @@ class AuthController extends Controller
         }
     }
 
-    // POST /api/logout
+    /**
+     * Cerrar sesión
+     *
+     * Invalida el token de acceso actual del usuario autenticado.
+     * Para cerrar todas las sesiones activas en todos los dispositivos,
+     * usar el endpoint de eliminación de todos los tokens.
+     *
+     * @group Autenticación
+     *
+     * @response 200 scenario="Sesión cerrada" {
+     *   "success": true,
+     *   "message": "Sesión cerrada correctamente",
+     *   "data": []
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
+     */
     public function logout(Request $request)
     {
         try {
@@ -170,7 +362,41 @@ class AuthController extends Controller
         }
     }
 
-    // GET /api/me
+    /**
+     * Obtener usuario autenticado
+     *
+     * Retorna los datos del usuario actualmente autenticado, incluyendo
+     * sus roles, permisos y estado del 2FA.
+     *
+     * @group Autenticación
+     *
+     * @response 200 scenario="Datos del usuario" {
+     *   "success": true,
+     *   "message": "Sesión iniciada correctamente",
+     *   "data": {
+     *     "user": {
+     *       "id": 1,
+     *       "name": "Juan Pérez",
+     *       "email": "usuario@ejemplo.com",
+     *       "first_name": "Juan",
+     *       "second_name": null,
+     *       "first_last_name": "Pérez",
+     *       "second_last_name": null,
+     *       "phone": "****",
+     *       "phone_ext": null,
+     *       "active": 1,
+     *       "imagen": null,
+     *       "lang": "es",
+     *       "has_2fa": false,
+     *       "roles": ["Admin"],
+     *       "permissions": ["ver-usuarios", "crear-usuarios"]
+     *     }
+     *   }
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
+     */
     public function me(Request $request)
     {
         try {

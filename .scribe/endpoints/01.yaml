@@ -1,0 +1,183 @@
+name: 'Autenticación de Dos Factores (2FA)'
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/2fa/enable
+    metadata:
+      custom: []
+      groupName: 'Autenticación de Dos Factores (2FA)'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Habilitar autenticación de dos factores'
+      description: |-
+        Genera un secreto TOTP y devuelve la URL del código QR y la clave manual
+        para configurar una app autenticadora (Google Authenticator, Authy, etc.).
+        El 2FA no queda activo hasta que se verifique un código con `POST /api/2fa/verify`.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Secreto 2FA generado. Escanea el QR con tu app autenticadora.",
+            "data": {
+              "qr_code_url": "data:image/png;base64,iVBORw0KGgo...",
+              "manual_entry_key": "JBSWY3DPEHPK3PXP",
+              "message": "Escanea el código QR con Google Authenticator o ingresa la clave manualmente."
+            }
+          }
+        headers: []
+        description: 'Secreto generado'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+      -
+        custom: []
+        status: 409
+        content: |-
+          {
+            "success": false,
+            "message": "La autenticación de dos factores ya está habilitada",
+            "errors": ""
+          }
+        headers: []
+        description: '2FA ya está activo'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/2fa/verify
+    metadata:
+      custom: []
+      groupName: 'Autenticación de Dos Factores (2FA)'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Verificar código de dos factores'
+      description: |-
+        Verifica el código TOTP de 6 dígitos generado por la app autenticadora.
+        Si el 2FA aún no estaba confirmado, lo activa en este paso.
+        Devuelve un nuevo Bearer Token con acceso completo.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      code:
+        custom: []
+        name: code
+        description: 'Código TOTP de 6 dígitos de la app autenticadora.'
+        required: true
+        example: '123456'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      code: '123456'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Autenticación de dos factores verificada",
+            "data": {
+              "token": "4|dEfGhIjK...",
+              "token_type": "Bearer",
+              "verified": true
+            }
+          }
+        headers: []
+        description: 'Código válido'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "El código ingresado es incorrecto",
+            "errors": ""
+          }
+        headers: []
+        description: 'Código inválido'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "El 2FA no ha sido configurado. Usa POST /api/2fa/enable primero.",
+            "errors": ""
+          }
+        headers: []
+        description: '2FA no configurado'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "Los datos proporcionados no son válidos",
+            "errors": { "code": ["El campo code debe tener 6 dígitos."] }
+          }
+        headers: []
+        description: 'Validación fallida'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

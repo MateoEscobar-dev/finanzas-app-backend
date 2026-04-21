@@ -1,0 +1,675 @@
+name: Autenticación
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/login
+    metadata:
+      custom: []
+      groupName: Autenticación
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Iniciar sesión'
+      description: |-
+        Autentica al usuario con sus credenciales y devuelve un Bearer Token de Sanctum.
+        Si el usuario tiene 2FA activo, el campo `requires_2fa` será `true` y deberá
+        verificarse en `POST /api/2fa/verify` antes de acceder a recursos protegidos.
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      email:
+        custom: []
+        name: email
+        description: 'Correo electrónico registrado.'
+        required: true
+        example: usuario@ejemplo.com
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      password:
+        custom: []
+        name: password
+        description: 'Contraseña encriptada en AES-256-CBC (CryptoJS). No envíar en texto plano.'
+        required: true
+        example: U2FsdGVkX1+abc123...
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      email: usuario@ejemplo.com
+      password: U2FsdGVkX1+abc123...
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Sesión iniciada correctamente",
+            "data": {
+              "token": "1|aBcDeFgHiJkLmN...",
+              "token_type": "Bearer",
+              "requires_2fa": false,
+              "user": {
+                "id": 1,
+                "name": "Juan Pérez",
+                "email": "usuario@ejemplo.com",
+                "first_name": "Juan",
+                "second_name": null,
+                "first_last_name": "Pérez",
+                "second_last_name": null,
+                "phone": "****",
+                "phone_ext": null,
+                "active": 1,
+                "imagen": null,
+                "lang": "es",
+                "has_2fa": false,
+                "roles": ["User"],
+                "permissions": ["ver-usuarios"]
+              }
+            }
+          }
+        headers: []
+        description: 'Sesión iniciada'
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Sesión iniciada correctamente",
+            "data": {
+              "token": "2|xYzAbC...",
+              "token_type": "Bearer",
+              "requires_2fa": true,
+              "user": { "id": 2, "name": "María López", "email": "maria@ejemplo.com" }
+            }
+          }
+        headers: []
+        description: '2FA requerido'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "success": false,
+            "message": "Las credenciales son incorrectas",
+            "errors": ""
+          }
+        headers: []
+        description: 'Credenciales incorrectas'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "success": false,
+            "message": "El usuario se encuentra inactivo",
+            "errors": ""
+          }
+        headers: []
+        description: 'Usuario inactivo'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "Los datos proporcionados no son válidos",
+            "errors": { "email": ["El correo electrónico es obligatorio."] }
+          }
+        headers: []
+        description: 'Validación fallida'
+      -
+        custom: []
+        status: 429
+        content: |-
+          {
+            "message": "Too Many Requests"
+          }
+        headers: []
+        description: 'Demasiados intentos'
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/register
+    metadata:
+      custom: []
+      groupName: Autenticación
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Registrar nuevo usuario'
+      description: |-
+        Crea una nueva cuenta de usuario en el sistema. El usuario recibe automáticamente
+        el rol `User` y un Bearer Token listo para usar.
+        La contraseña debe enviarse encriptada en AES-256-CBC.
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      document:
+        custom: []
+        name: document
+        description: 'Número de documento de identidad (único, máx. 20 caracteres).'
+        required: true
+        example: '12345678'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      first_name:
+        custom: []
+        name: first_name
+        description: 'Primer nombre (máx. 100 caracteres).'
+        required: true
+        example: Juan
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      second_name:
+        custom: []
+        name: second_name
+        description: 'Segundo nombre (opcional, máx. 100 caracteres).'
+        required: false
+        example: Carlos
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      first_last_name:
+        custom: []
+        name: first_last_name
+        description: 'Primer apellido (máx. 100 caracteres).'
+        required: true
+        example: Pérez
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      second_last_name:
+        custom: []
+        name: second_last_name
+        description: 'Segundo apellido (opcional, máx. 100 caracteres).'
+        required: false
+        example: Gómez
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      email:
+        custom: []
+        name: email
+        description: 'Correo electrónico válido y único (último máx. 255 caracteres).'
+        required: true
+        example: nuevo@ejemplo.com
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      password:
+        custom: []
+        name: password
+        description: 'Contraseña encriptada AES-256-CBC (mínimo 8 caracteres, 1 mayúscula, 1 número, 1 especial).'
+        required: true
+        example: U2FsdGVkX1+xyz...
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      phone:
+        custom: []
+        name: phone
+        description: 'Teléfono en formato E.164 (ej: +573001234567).'
+        required: true
+        example: '+573001234567'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      phone_ext:
+        custom: []
+        name: phone_ext
+        description: 'Extensión telefónica (opcional, 1-10 dígitos).'
+        required: false
+        example: '101'
+        type: numeric
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      birth_day:
+        custom: []
+        name: birth_day
+        description: 'Fecha de nacimiento en formato YYYY-MM-DD. Debe ser mayor de 18 años.'
+        required: true
+        example: '1990-05-15'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      document: '12345678'
+      first_name: Juan
+      second_name: Carlos
+      first_last_name: Pérez
+      second_last_name: Gómez
+      email: nuevo@ejemplo.com
+      password: U2FsdGVkX1+xyz...
+      phone: '+573001234567'
+      phone_ext: '101'
+      birth_day: '1990-05-15'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: |-
+          {
+            "success": true,
+            "message": "Usuario registrado exitosamente",
+            "data": {
+              "token": "3|pQrStUvW...",
+              "token_type": "Bearer",
+              "user": {
+                "id": 5,
+                "name": "Juan Pérez",
+                "email": "nuevo@ejemplo.com",
+                "first_name": "Juan",
+                "second_name": "Carlos",
+                "first_last_name": "Pérez",
+                "second_last_name": "Gómez",
+                "phone": "****",
+                "active": 1,
+                "lang": "es",
+                "has_2fa": false,
+                "roles": ["User"],
+                "permissions": []
+              }
+            }
+          }
+        headers: []
+        description: 'Usuario creado'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "Los datos proporcionados no son válidos",
+            "errors": { "email": ["El correo electrónico ya está registrado."] }
+          }
+        headers: []
+        description: 'Validación fallida'
+      -
+        custom: []
+        status: 429
+        content: |-
+          {
+            "message": "Too Many Requests"
+          }
+        headers: []
+        description: 'Demasiados intentos'
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/forgot-password
+    metadata:
+      custom: []
+      groupName: Autenticación
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Recuperar contraseña'
+      description: |-
+        Envía un enlace de recuperación al correo registrado.
+        La respuesta es genérica para no revelar si el email existe en el sistema.
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      email:
+        custom: []
+        name: email
+        description: 'Correo electrónico asociado a la cuenta.'
+        required: true
+        example: usuario@ejemplo.com
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      email: usuario@ejemplo.com
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Si el correo está registrado, recibirás un enlace de recuperación",
+            "data": []
+          }
+        headers: []
+        description: 'Enlace enviado'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "Los datos proporcionados no son válidos",
+            "errors": { "email": ["El correo electrónico es obligatorio."] }
+          }
+        headers: []
+        description: 'Validación fallida'
+      -
+        custom: []
+        status: 429
+        content: |-
+          {
+            "message": "Too Many Requests"
+          }
+        headers: []
+        description: 'Demasiados intentos'
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/reset-password
+    metadata:
+      custom: []
+      groupName: Autenticación
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Restablecer contraseña'
+      description: |-
+        Restablece la contraseña del usuario usando el token enviado por correo.
+        Todos los tokens de sesión son invalidados tras el reset exitoso.
+        La nueva contraseña debe enviarse encriptada en AES-256-CBC.
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      token:
+        custom: []
+        name: token
+        description: 'Token de recuperación recibido por correo.'
+        required: true
+        example: a1b2c3d4e5f6...
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      email:
+        custom: []
+        name: email
+        description: 'Correo electrónico de la cuenta.'
+        required: true
+        example: usuario@ejemplo.com
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      password:
+        custom: []
+        name: password
+        description: 'Nueva contraseña encriptada AES-256-CBC.'
+        required: true
+        example: U2FsdGVkX1+newpass...
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      token: a1b2c3d4e5f6...
+      email: usuario@ejemplo.com
+      password: U2FsdGVkX1+newpass...
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Contraseña restablecida exitosamente",
+            "data": []
+          }
+        headers: []
+        description: 'Contraseña restablecida'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "El token de recuperación es inválido o ha expirado",
+            "errors": ""
+          }
+        headers: []
+        description: 'Token inválido o expirado'
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "success": false,
+            "message": "Los datos proporcionados no son válidos",
+            "errors": { "token": ["El token es obligatorio."] }
+          }
+        headers: []
+        description: 'Validación fallida'
+      -
+        custom: []
+        status: 429
+        content: |-
+          {
+            "message": "Too Many Requests"
+          }
+        headers: []
+        description: 'Demasiados intentos'
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/logout
+    metadata:
+      custom: []
+      groupName: Autenticación
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Cerrar sesión'
+      description: |-
+        Invalida el token de acceso actual del usuario autenticado.
+        Para cerrar todas las sesiones activas en todos los dispositivos,
+        usar el endpoint de eliminación de todos los tokens.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Sesión cerrada correctamente",
+            "data": []
+          }
+        headers: []
+        description: 'Sesión cerrada'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/me
+    metadata:
+      custom: []
+      groupName: Autenticación
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Obtener usuario autenticado'
+      description: |-
+        Retorna los datos del usuario actualmente autenticado, incluyendo
+        sus roles, permisos y estado del 2FA.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Sesión iniciada correctamente",
+            "data": {
+              "user": {
+                "id": 1,
+                "name": "Juan Pérez",
+                "email": "usuario@ejemplo.com",
+                "first_name": "Juan",
+                "second_name": null,
+                "first_last_name": "Pérez",
+                "second_last_name": null,
+                "phone": "****",
+                "phone_ext": null,
+                "active": 1,
+                "imagen": null,
+                "lang": "es",
+                "has_2fa": false,
+                "roles": ["Admin"],
+                "permissions": ["ver-usuarios", "crear-usuarios"]
+              }
+            }
+          }
+        headers: []
+        description: 'Datos del usuario'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

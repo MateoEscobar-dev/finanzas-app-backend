@@ -1,0 +1,274 @@
+name: 'Roles y Permisos'
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/roles
+    metadata:
+      custom: []
+      groupName: 'Roles y Permisos'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Listar roles'
+      description: |-
+        Retorna una lista paginada de roles del sistema con sus permisos asociados.
+        Soporta búsqueda por nombre de rol.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      take:
+        custom: []
+        name: take
+        description: 'Número de registros a retornar (1-100). Por defecto: 10.'
+        required: false
+        example: 10
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      skip:
+        custom: []
+        name: skip
+        description: 'Número de registros a saltar (offset). Por defecto: 0.'
+        required: false
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      search:
+        custom: []
+        name: search
+        description: 'Término de búsqueda por nombre del rol.'
+        required: false
+        example: Admin
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      take: 10
+      skip: 0
+      search: Admin
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Roles obtenidos exitosamente",
+            "data": {
+              "records": [
+                {
+                  "id": 1,
+                  "name": "Admin",
+                  "guard_name": "api",
+                  "created_at": "2025-01-01T00:00:00.000000Z",
+                  "updated_at": "2025-01-01T00:00:00.000000Z",
+                  "permissions": ["ver-usuarios", "crear-usuarios", "editar-usuarios"],
+                  "permissions_count": 3
+                },
+                {
+                  "id": 2,
+                  "name": "User",
+                  "guard_name": "api",
+                  "permissions": ["ver-usuarios"],
+                  "permissions_count": 1
+                }
+              ],
+              "pagination": {
+                "total": 5,
+                "take": 10,
+                "skip": 0,
+                "pages": 1,
+                "current_page": 1
+              }
+            }
+          }
+        headers: []
+        description: 'Lista de roles'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/roles/{id}'
+    metadata:
+      custom: []
+      groupName: 'Roles y Permisos'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Obtener rol'
+      description: 'Retorna los datos de un rol específico con todos sus permisos asignados.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'ID del rol.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Rol obtenido exitosamente",
+            "data": {
+              "id": 1,
+              "name": "Admin",
+              "guard_name": "api",
+              "created_at": "2025-01-01T00:00:00.000000Z",
+              "updated_at": "2025-01-01T00:00:00.000000Z",
+              "permissions": ["ver-usuarios", "crear-usuarios", "editar-usuarios", "eliminar-usuarios"],
+              "permissions_count": 4
+            }
+          }
+        headers: []
+        description: 'Rol encontrado'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+      -
+        custom: []
+        status: 404
+        content: |-
+          {
+            "success": false,
+            "message": "El rol no fue encontrado",
+            "errors": ""
+          }
+        headers: []
+        description: 'Rol no encontrado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/permissions
+    metadata:
+      custom: []
+      groupName: 'Roles y Permisos'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Listar permisos'
+      description: |-
+        Retorna todos los permisos disponibles en el sistema.
+        Útil para asignar permisos al crear o actualizar roles.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {BEARER_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Permisos obtenidos exitosamente",
+            "data": {
+              "permissions": [
+                { "id": 1, "name": "ver-usuarios", "guard_name": "api" },
+                { "id": 2, "name": "crear-usuarios", "guard_name": "api" },
+                { "id": 3, "name": "editar-usuarios", "guard_name": "api" },
+                { "id": 4, "name": "eliminar-usuarios", "guard_name": "api" },
+                { "id": 5, "name": "ver-roles", "guard_name": "api" }
+              ],
+              "count": 5
+            }
+          }
+        headers: []
+        description: 'Lista de permisos'
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Unauthenticated."
+          }
+        headers: []
+        description: 'No autenticado'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

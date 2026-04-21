@@ -16,10 +16,31 @@ class TwoFactorController extends Controller
     public function __construct(private readonly TwoFactorServiceInterface $twoFactor) {}
 
     /**
-     * POST /api/2fa/enable
+     * Habilitar autenticación de dos factores
      *
-     * Genera un secreto TOTP y devuelve la URL del QR y la clave manual.
-     * El usuario aún no tiene el 2FA confirmado hasta verificar el código.
+     * Genera un secreto TOTP y devuelve la URL del código QR y la clave manual
+     * para configurar una app autenticadora (Google Authenticator, Authy, etc.).
+     * El 2FA no queda activo hasta que se verifique un código con `POST /api/2fa/verify`.
+     *
+     * @group Autenticación de Dos Factores (2FA)
+     *
+     * @response 200 scenario="Secreto generado" {
+     *   "success": true,
+     *   "message": "Secreto 2FA generado. Escanea el QR con tu app autenticadora.",
+     *   "data": {
+     *     "qr_code_url": "data:image/png;base64,iVBORw0KGgo...",
+     *     "manual_entry_key": "JBSWY3DPEHPK3PXP",
+     *     "message": "Escanea el código QR con Google Authenticator o ingresa la clave manualmente."
+     *   }
+     * }
+     * @response 409 scenario="2FA ya está activo" {
+     *   "success": false,
+     *   "message": "La autenticación de dos factores ya está habilitada",
+     *   "errors": ""
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function enable(Request $request)
     {
@@ -49,10 +70,43 @@ class TwoFactorController extends Controller
     }
 
     /**
-     * POST /api/2fa/verify
+     * Verificar código de dos factores
      *
-     * Verifica el código TOTP y confirma el 2FA si aún no está confirmado,
-     * o valida la sesión si ya estaba activo.
+     * Verifica el código TOTP de 6 dígitos generado por la app autenticadora.
+     * Si el 2FA aún no estaba confirmado, lo activa en este paso.
+     * Devuelve un nuevo Bearer Token con acceso completo.
+     *
+     * @group Autenticación de Dos Factores (2FA)
+     *
+     * @bodyParam code string required Código TOTP de 6 dígitos de la app autenticadora. Example: 123456
+     *
+     * @response 200 scenario="Código válido" {
+     *   "success": true,
+     *   "message": "Autenticación de dos factores verificada",
+     *   "data": {
+     *     "token": "4|dEfGhIjK...",
+     *     "token_type": "Bearer",
+     *     "verified": true
+     *   }
+     * }
+     * @response 422 scenario="Código inválido" {
+     *   "success": false,
+     *   "message": "El código ingresado es incorrecto",
+     *   "errors": ""
+     * }
+     * @response 422 scenario="2FA no configurado" {
+     *   "success": false,
+     *   "message": "El 2FA no ha sido configurado. Usa POST /api/2fa/enable primero.",
+     *   "errors": ""
+     * }
+     * @response 422 scenario="Validación fallida" {
+     *   "success": false,
+     *   "message": "Los datos proporcionados no son válidos",
+     *   "errors": { "code": ["El campo code debe tener 6 dígitos."] }
+     * }
+     * @response 401 scenario="No autenticado" {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function verify(TwoFactorVerifyRequest $request)
     {
